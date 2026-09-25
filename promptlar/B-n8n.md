@@ -164,3 +164,5 @@ akis-aciklama.md içinde şunlar yer alsın:
 Kök README’de Bölüm B’nin durumunu gerçek sonuca göre güncelle. A’nın doğrulama kayıtlarını koru. Google Sheets/Telegram credential’larının yalnızca akışı gerçekten çalıştırmak için gerektiğini açıkla.
 
 Son raporda oluşturulan dosyaları, gerçek test sonuçlarını, şablon erişim durumunu, doğrulama kapsamını, commit’leri ve açık kalan sorunları kısa şekilde bildir.
+
+Tamam yapılan değişiklikleri github'a pushla.
