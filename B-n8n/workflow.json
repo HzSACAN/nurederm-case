@@ -1,0 +1,1152 @@
+{
+  "name": "Nurederm — Günlük laptop fiyat takibi",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "00988c71-9287-48cd-a175-7afefc12df9f",
+      "name": "Daily 09 Istanbul",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "60dd8c16-af56-4478-9b73-9dad4fa4a191",
+      "name": "Manual Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: {\n    spreadsheet_id: 'REPLACE_WITH_SPREADSHEET_ID',\n    telegram_chat_id: 'REPLACE_WITH_TELEGRAM_CHAT_ID',\n    source_url: 'https://webscraper.io/test-sites/e-commerce/static/computers/laptops',\n    page_limit: 200, page_delay_seconds: 1, request_timeout_ms: 10000,\n  } }];"
+      },
+      "id": "d26d847b-efba-4c0d-b3cd-114565e900cf",
+      "name": "Configuration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const config = $input.first().json;\n  if (!/^[A-Za-z0-9_-]+$/.test(config.spreadsheet_id) || config.spreadsheet_id.startsWith('REPLACE_')\n    || !/^(?:-?\\d+|@[A-Za-z0-9_]+)$/.test(config.telegram_chat_id)) {\n    throw new Error('Yapılandırma: Spreadsheet ID ve Telegram chat ID doldurulmalı. Sayfa: ' + config.source_url);\n  }\n  if (config.source_url !== 'https://webscraper.io/test-sites/e-commerce/static/computers/laptops'\n    || !Number.isInteger(config.page_limit) || config.page_limit < 2 || config.page_limit > 1000\n    || config.page_delay_seconds < 1 || config.page_delay_seconds > 30\n    || config.request_timeout_ms < 1000 || config.request_timeout_ms > 30000) throw new Error('Geçersiz tarama ayarları.');\n  const scraped_at = new Date().toISOString();\n  return [{ json: { ...config, run_id: `run-${$execution.id}-${Date.now()}`, scraped_at,\n    page: 1, last_page: 1, visited_pages: [], products: [] }, pairedItem: { item: 0 } }];"
+      },
+      "id": "7e54e604-d9c7-4b36-ae7d-163fe76497a0",
+      "name": "Initialize Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $input.first().json;\n  if (!Number.isInteger(state.page) || state.page < 1 || state.page >= state.page_limit\n    || state.visited_pages.includes(state.page)) throw new Error('Sayfa döngüsü/sınırı geçersiz: ' + state.source_url);\n  return [{ json: { ...state, page_url: `${state.source_url}?page=${state.page}` }, pairedItem: { item: 0 } }];"
+      },
+      "id": "6bb3737e-51c3-4a0d-aefa-5eb8a1cbef02",
+      "name": "Page State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.page_url }}",
+        "options": {
+          "timeout": "={{ $('Configuration').first().json.request_timeout_ms }}",
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text",
+              "outputPropertyName": "body",
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "73ac8ed9-cc9f-4c7f-a99f-0fb2b1b990d7",
+      "name": "Fetch Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $('Page State').itemMatching(0).json;\n  const response = $input.first().json;\n  if (!Number.isInteger(response.statusCode) || response.statusCode < 200 || response.statusCode >= 300\n    || typeof response.body !== 'string' || !response.body.trim()) {\n    throw new Error(`Sayfa alınamadı veya boş HTTP yanıtı (${response.statusCode ?? 'bilinmiyor'}): ${state.page_url}`);\n  }\n  return [{ json: { state, html: response.body }, pairedItem: { item: 0 } }];"
+      },
+      "id": "d6dcb3a5-ec4a-41f2-add5-4bb4ce1881db",
+      "name": "Check HTTP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "sourceData": "json",
+        "dataPropertyName": "html",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "cards",
+              "cssSelector": ".thumbnail",
+              "returnValue": "html",
+              "returnArray": true
+            },
+            {
+              "key": "page_links",
+              "cssSelector": ".pagination a[href]",
+              "returnValue": "attribute",
+              "returnArray": true,
+              "attribute": "href"
+            },
+            {
+              "key": "active_page",
+              "cssSelector": ".pagination .active",
+              "returnValue": "text",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "id": "8869db19-2c16-4024-a2a5-782a3fbe3299",
+      "name": "Extract Page HTML",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $('Check HTTP').itemMatching(0).json.state;\n  const extracted = $input.first().json;\n  const fail = reason => { throw new Error(`${reason} | Sayfa: ${state.page_url}`); };\n  if (!Array.isArray(extracted.cards) || extracted.cards.length === 0) fail('Hiç ürün bulunamadı');\n  if (!Array.isArray(extracted.page_links)) fail('Sayfalama çıkarımı geçersiz');\n  const origin = 'https://webscraper.io';\n  const categoryPath = state.source_url.slice(origin.length);\n  let last_page = Math.max(state.last_page, state.page);\n  for (const raw of extracted.page_links) {\n    if (typeof raw !== 'string' || !raw.trim()) fail('Boş sayfalama hedefi');\n    const href = raw.trim();\n    const absolute = href.startsWith('?') ? state.source_url + href\n      : href.startsWith('/') && !href.startsWith('//') ? origin + href : href;\n    if (!absolute.startsWith(origin + categoryPath + '?page=')) fail('Kategori dışı sayfalama hedefi');\n    const tail = absolute.slice((origin + categoryPath + '?page=').length);\n    if (!/^[1-9]\\d*$/.test(tail)) fail('Geçersiz sayfa numarası');\n    const page = Number(tail);\n    if (!Number.isSafeInteger(page) || page >= state.page_limit) fail('Sayfa güvenlik sınırına ulaşıldı; tarama tamamlanmadı');\n    last_page = Math.max(last_page, page);\n  }\n  const active = extracted.active_page;\n  if (Array.isArray(active) && active.length && (active.length !== 1 || Number(active[0]) !== state.page)) fail('İstenen ve dönen sayfa numarası farklı');\n  return extracted.cards.map((card_html, index) => {\n    if (typeof card_html !== 'string' || !card_html.trim()) fail('Boş ürün kartı');\n    return { json: { card_html, card_index: index, state: { ...state, last_page, expected_cards: extracted.cards.length } }, pairedItem: { item: 0 } };\n  });"
+      },
+      "id": "a5b20b41-c290-4f9f-843e-270bcc5241e7",
+      "name": "Expand Cards",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "sourceData": "json",
+        "dataPropertyName": "card_html",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "names",
+              "cssSelector": "a.title",
+              "returnValue": "attribute",
+              "returnArray": true,
+              "attribute": "title"
+            },
+            {
+              "key": "labels",
+              "cssSelector": "a.title",
+              "returnValue": "text",
+              "returnArray": true
+            },
+            {
+              "key": "prices",
+              "cssSelector": ".price [itemprop=\"price\"]",
+              "returnValue": "text",
+              "returnArray": true
+            },
+            {
+              "key": "reviews",
+              "cssSelector": "[itemprop=\"reviewCount\"]",
+              "returnValue": "text",
+              "returnArray": true
+            },
+            {
+              "key": "urls",
+              "cssSelector": "a.title",
+              "returnValue": "attribute",
+              "returnArray": true,
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "id": "589d4dd2-cf21-4798-8360-c0d7a0d78189",
+      "name": "Extract Card HTML",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\n  const originals = items.map((_, index) => $('Expand Cards').itemMatching(index).json);\n  const state = originals[0]?.state;\n  if (!state || items.length === 0) throw new Error('Ürün kartları kayboldu; tarama tamamlanmadı.');\n  const fail = reason => { throw new Error(`${reason} | Sayfa: ${state.page_url}`); };\n  if (items.length !== state.expected_cards) fail('Eksik ürün kartı çıktısı; sayfa tamamlanmadı');\n  const one = (values, label) => {\n    if (!Array.isArray(values) || values.length !== 1 || typeof values[0] !== 'string' || !values[0].trim()) fail(`Eksik/çoklu ${label}`);\n    return values[0].trim();\n  };\n  const seen = new Set(state.products.map(product => product.product_url));\n  const current = items.map((item, index) => {\n    if (originals[index].state.page !== state.page || originals[index].card_index !== index) fail('Ürün kartı eşleştirmesi bozuldu');\n    const data = item.json;\n    const names = data.names;\n    if (!Array.isArray(names) || names.length !== 1) fail('Eksik/çoklu ürün başlığı');\n    const product_name = typeof names[0] === 'string' && names[0].trim() ? names[0].trim() : one(data.labels, 'ürün adı');\n    const priceText = one(data.prices, 'fiyat');\n    if (!/^\\$(?:\\d+|\\d{1,3}(?:,\\d{3})+)(?:\\.\\d{1,2})?$/.test(priceText)) fail('Geçersiz fiyat');\n    const price = Number(priceText.slice(1).replace(/,/g, ''));\n    if (!Number.isFinite(price) || price < 0 || !Number.isSafeInteger(Math.round(price * 100))) fail('Geçersiz fiyat');\n    const reviews = one(data.reviews, 'yorum sayısı');\n    if (!/^\\d+$/.test(reviews)) fail('Geçersiz yorum sayısı');\n    const review_count = Number(reviews);\n    if (!Number.isSafeInteger(review_count)) fail('Geçersiz yorum sayısı');\n    const href = one(data.urls, 'ürün URL');\n    const product_url = href.startsWith('/') && !href.startsWith('//') ? 'https://webscraper.io' + href : href;\n    if (!/^https:\\/\\/webscraper\\.io\\/test-sites\\/e-commerce\\/static\\/product\\/\\d+$/.test(product_url)) fail('Geçersiz ürün URL');\n    if (seen.has(product_url)) fail('Yinelenen ürün URL; eksik/tekrarlı sayfa olabilir');\n    seen.add(product_url);\n    return { product_name, price, review_count, product_url };\n  });\n  return [{ json: { ...state, products: [...state.products, ...current],\n    visited_pages: [...state.visited_pages, state.page], page: state.page + 1,\n    more_pages: state.page < state.last_page }, pairedItem: items.map((_, item) => ({ item })) }];"
+      },
+      "id": "48ee042b-5fdf-4865-abd3-6d9aaeff9973",
+      "name": "Validate Page",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4111265e-cee6-48a1-88d5-50454e59d6c7",
+              "leftValue": "={{ $json.more_pages }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "89325d3d-cb4e-41a8-b6cf-a7f66a4b94ae",
+      "name": "More Pages",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": "={{ $('Configuration').first().json.page_delay_seconds }}",
+        "unit": "seconds"
+      },
+      "id": "2c0cc663-3f55-472f-a1d3-6f31d0ef702f",
+      "name": "Page Delay",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2200,
+        -220
+      ],
+      "webhookId": "71da7a02-b3f8-4f65-9fec-d71b2a973ad6"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $input.first().json;\n  if (state.more_pages || state.last_page >= state.page_limit || state.products.length === 0\n    || state.visited_pages.length !== state.last_page\n    || state.visited_pages.some((page, index) => page !== index + 1)) {\n    throw new Error('Eksik tarama; snapshot yazılmayacak. Sayfa: ' + state.page_url);\n  }\n  return [{ json: { ...state, product_count: state.products.length }, pairedItem: { item: 0 } }];"
+      },
+      "id": "26803c63-ce28-4719-8ce1-05f1dc025433",
+      "name": "Finalize Scan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Configuration').first().json.spreadsheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "runs",
+          "mode": "name"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "id": "48bfd5c6-0c26-4b34-9eab-7246edb53a0d",
+      "name": "Read Runs",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2640,
+        180
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const scan = $('Finalize Scan').first().json;\n  if ($input.all().some(item => item.error || Object.hasOwn(item.json, 'error'))) throw new Error('Google Sheets runs okuması başarısız; boş geçmiş kabul edilmedi. Kaynak: ' + scan.source_url);\n  const rows = $input.all().map(item => item.json).filter(row => Object.keys(row).length > 0);\n  const runs = rows.map(row => {\n    const count = typeof row.product_count === 'string' && /^\\d+$/.test(row.product_count) ? Number(row.product_count) : row.product_count;\n    if (typeof row.run_id !== 'string' || !row.run_id.trim() || typeof row.completed_at !== 'string'\n      || !Number.isFinite(Date.parse(row.completed_at)) || !Number.isSafeInteger(count) || count < 1) {\n      throw new Error('runs tablosunda geçersiz tamamlanma kaydı. Kaynak: ' + scan.source_url);\n    }\n    return { run_id: row.run_id, completed_at: row.completed_at, product_count: count };\n  });\n  if (new Set(runs.map(run => run.run_id)).size !== runs.length) throw new Error('runs tablosunda yinelenen run_id.');\n  runs.sort((a, b) => Date.parse(b.completed_at) - Date.parse(a.completed_at) || b.run_id.localeCompare(a.run_id));\n  return [{ json: { ...scan, previous_run: runs[0] ?? null }, pairedItem: { item: 0 } }];"
+      },
+      "id": "cd9998b4-ddd9-4974-bff2-c5842badbc2b",
+      "name": "Select Previous Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Configuration').first().json.spreadsheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "snapshots",
+          "mode": "name"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "id": "cb41a6b6-b3ec-4a16-aff7-0c582d93a798",
+      "name": "Read Snapshots",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        3080,
+        180
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $('Select Previous Run').first().json;\n  if ($input.all().some(item => item.error || Object.hasOwn(item.json, 'error'))) throw new Error('Google Sheets snapshots okuması başarısız; boş geçmiş kabul edilmedi. Kaynak: ' + state.source_url);\n  const rows = $input.all().map(item => item.json);\n  const prior = state.previous_run;\n  const previous = new Map();\n  const cents = value => {\n    if (typeof value !== 'number' && (typeof value !== 'string' || !/^\\d+(?:\\.\\d{1,2})?$/.test(value.trim()))) throw new Error('Geçmiş snapshot fiyatı geçersiz.');\n    const number = Number(value);\n    const result = Math.round(number * 100);\n    if (!Number.isFinite(number) || number < 0 || !Number.isSafeInteger(result)) throw new Error('Geçmiş snapshot fiyatı geçersiz.');\n    return result;\n  };\n  if (prior) {\n    const selected = rows.filter(row => row.run_id === prior.run_id);\n    if (selected.length !== prior.product_count) throw new Error('Tamamlanmış çalışma ile snapshot sayısı uyuşmuyor; geçmiş güvenilir değil.');\n    for (const row of selected) {\n      if (typeof row.product_url !== 'string' || !/^https:\\/\\/webscraper\\.io\\/test-sites\\/e-commerce\\/static\\/product\\/\\d+$/.test(row.product_url)\n        || previous.has(row.product_url)) throw new Error('Geçmiş snapshot URL geçersiz/yinelenen.');\n      previous.set(row.product_url, cents(row.price));\n    }\n  }\n  const changes = [];\n  for (const product of state.products) {\n    const old = previous.get(product.product_url);\n    const current = cents(product.price);\n    if (old === undefined) changes.push({ ...product, kind: 'new' });\n    else if (old !== current) changes.push({ ...product, kind: 'price', old_price: old / 100 });\n  }\n  return [{ json: { ...state, changes, first_run: prior === null }, pairedItem: { item: 0 } }];"
+      },
+      "id": "794bbb05-1442-4699-81de-0e2ea40c6534",
+      "name": "Compare Snapshots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3300,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $input.first().json;\n  return state.products.map(product => ({ json: { run_id: state.run_id, scraped_at: state.scraped_at,\n    product_url: product.product_url, product_name: product.product_name, price: product.price,\n    review_count: product.review_count }, pairedItem: { item: 0 } }));"
+      },
+      "id": "d196c6c2-fa4c-4a9e-b677-c5d9759a0b24",
+      "name": "Snapshot Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Configuration').first().json.spreadsheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "snapshots",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "useAppend": true,
+          "handlingExtraData": "error"
+        }
+      },
+      "id": "df2311c0-c2ea-4836-960e-2791d2790341",
+      "name": "Append Snapshots",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        3740,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $('Compare Snapshots').first().json;\n  const written = $input.all().map(item => item.json);\n  if (written.length !== state.products.length || written.some(row => row.run_id !== state.run_id)\n    || new Set(written.map(row => row.product_url)).size !== state.products.length) {\n    throw new Error('Snapshot yazımı tamamlanmadı; runs kaydı oluşturulmayacak. Kaynak: ' + state.source_url);\n  }\n  return [{ json: state, pairedItem: $input.all().map((_, item) => ({ item })) }];"
+      },
+      "id": "65277734-73e0-4aca-ad7e-acd2d9ab9919",
+      "name": "Confirm Snapshots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $input.first().json;\n  const escape = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n  const fresh = state.changes.filter(change => change.kind === 'new').length;\n  const changed = state.changes.length - fresh;\n  const sheet = `https://docs.google.com/spreadsheets/d/${state.spreadsheet_id}/edit`;\n  const header = `Laptop fiyat takibi\\n${escape(state.scraped_at)}\\nYeni: ${fresh} · Fiyat değişikliği: ${changed}${state.first_run ? '\\nİlk çalışma: tüm ürünler yeni kabul edildi.' : ''}\\n`;\n  let body = '';\n  let shown = 0;\n  for (const change of state.changes) {\n    const name = escape([...change.product_name].slice(0, 180).join(''));\n    const price = change.kind === 'new' ? `$${change.price.toFixed(2)}` : `$${change.old_price.toFixed(2)} → $${change.price.toFixed(2)}`;\n    const line = `\\n${change.kind === 'new' ? 'Yeni' : 'Fiyat'}: ${name}\\n${price}\\n${escape(change.product_url)}\\n`;\n    if ((header + body + line).length > 3200) break;\n    body += line;\n    shown++;\n  }\n  const omitted = state.changes.length - shown;\n  const text = header + body + (omitted ? `\\nÖzet: ${omitted} ek değişiklik bu mesaja sığmadı.\\n` : '\\n')\n    + `Tüm snapshot satırları (run_id: ${escape(state.run_id)}):\\n${escape(sheet)}`;\n  if (text.length > 3900) throw new Error('Telegram metin sınırı aşıldı.');\n  return [{ json: { ...state, notification_text: text, has_changes: state.changes.length > 0 }, pairedItem: { item: 0 } }];"
+      },
+      "id": "5ad91ec1-d7a0-48c3-8fe1-3576adad5567",
+      "name": "Build Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4180,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f06f874b-5c64-4c9c-ad81-2554887b2746",
+              "leftValue": "={{ $json.has_changes }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "29b52cb1-e6de-447e-8f79-465ded1a5f16",
+      "name": "Has Changes",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4400,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Configuration').first().json.telegram_chat_id }}",
+        "text": "={{ $json.notification_text }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "disable_web_page_preview": true,
+          "appendAttribution": false
+        }
+      },
+      "id": "510dea61-0725-4ccc-ab55-1d0eedd5f6d1",
+      "name": "Send Changes",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4620,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const state = $('Compare Snapshots').first().json;\n  return [{ json: { run_id: state.run_id, completed_at: new Date().toISOString(), product_count: state.products.length }, pairedItem: { item: 0 } }];"
+      },
+      "id": "f0c2ddad-ba26-49c3-96a8-12a89fc5e9e3",
+      "name": "Prepare Completed Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4840,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Configuration').first().json.spreadsheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "runs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW",
+          "useAppend": true,
+          "handlingExtraData": "error"
+        }
+      },
+      "id": "5fce923c-8ef9-4391-845b-7bd48de46f16",
+      "name": "Append Completed Run",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        5060,
+        180
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const data = $input.first().json;\n  let page = data.page_url;\n  if (!page) { try { page = $('Page State').itemMatching(0).json.page_url; } catch { page = 'https://webscraper.io/test-sites/e-commerce/static/computers/laptops'; } }\n  const raw = typeof data.error === 'string' ? data.error : data.error?.message ?? data.message ?? 'Akış adımı başarısız oldu';\n  const reason = String(raw).slice(0, 700);\n  const failure = `Fiyat takibi BAŞARISIZ\\nNeden: ${reason}\\nİlgili sayfa/kaynak: ${page}\\nTamamlanma kaydının durumu kontrol edilmeli; çalışma başarılı kabul edilmemeli.`;\n  const escape = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n  return [{ json: { failure, telegram_text: escape(failure) }, pairedItem: { item: 0 } }];"
+      },
+      "id": "ae83ed3d-898b-40bc-b963-ef5e9308fa5c",
+      "name": "Build Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        580
+      ],
+      "onError": "stopWorkflow"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $('Configuration').first().json.telegram_chat_id }}",
+        "text": "={{ $json.telegram_text }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "disable_web_page_preview": true,
+          "appendAttribution": false
+        }
+      },
+      "id": "62e622eb-bda5-4562-8e49-0f92f4a5151a",
+      "name": "Send Error",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        580
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "errorType": "errorMessage",
+        "errorMessage": "={{ $('Build Error').first().json.failure }}"
+      },
+      "id": "6d4f6f86-b044-48c7-8e62-71ce62094c39",
+      "name": "Fail Execution",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        2860,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Bölüm B — pasif teslim\nKaynak: Tony Paul / n8n template 4640.\n1. Configuration içindeki iki ID’yi doldurun.\n2. Sheets ve Telegram credential’larını seçin.\n3. snapshots/runs başlıklarını oluşturun.\n4. Tek çalışma kuralını koruyun.\n\nTarama → doğrulama → snapshot → bildirim → tamamlanma kaydı.\nHata bildirimi başarısız olsa da akış başarısız biter.\nKaynak uyumu: n8n 1.112.6. Canlı n8n import/runtime testi yapılmadı.\nAyrıntılar: akis-aciklama.md",
+        "height": 360,
+        "width": 430
+      },
+      "id": "feabd841-127e-4cf7-8ac7-062f3b0a1d64",
+      "name": "Read Me",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Daily 09 Istanbul": {
+      "main": [
+        [
+          {
+            "node": "Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Start": {
+      "main": [
+        [
+          {
+            "node": "Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuration": {
+      "main": [
+        [
+          {
+            "node": "Initialize Run",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Run": {
+      "main": [
+        [
+          {
+            "node": "Page State",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Page State": {
+      "main": [
+        [
+          {
+            "node": "Fetch Page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Page": {
+      "main": [
+        [
+          {
+            "node": "Check HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check HTTP": {
+      "main": [
+        [
+          {
+            "node": "Extract Page HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Page HTML": {
+      "main": [
+        [
+          {
+            "node": "Expand Cards",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Cards": {
+      "main": [
+        [
+          {
+            "node": "Extract Card HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Card HTML": {
+      "main": [
+        [
+          {
+            "node": "Validate Page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Page": {
+      "main": [
+        [
+          {
+            "node": "More Pages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "More Pages": {
+      "main": [
+        [
+          {
+            "node": "Page Delay",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finalize Scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Page Delay": {
+      "main": [
+        [
+          {
+            "node": "Page State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize Scan": {
+      "main": [
+        [
+          {
+            "node": "Read Runs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Runs": {
+      "main": [
+        [
+          {
+            "node": "Select Previous Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Previous Run": {
+      "main": [
+        [
+          {
+            "node": "Read Snapshots",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Snapshots": {
+      "main": [
+        [
+          {
+            "node": "Compare Snapshots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Snapshots": {
+      "main": [
+        [
+          {
+            "node": "Snapshot Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Snapshot Rows": {
+      "main": [
+        [
+          {
+            "node": "Append Snapshots",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Snapshots": {
+      "main": [
+        [
+          {
+            "node": "Confirm Snapshots",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm Snapshots": {
+      "main": [
+        [
+          {
+            "node": "Build Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Notification": {
+      "main": [
+        [
+          {
+            "node": "Has Changes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Changes": {
+      "main": [
+        [
+          {
+            "node": "Send Changes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Completed Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Changes": {
+      "main": [
+        [
+          {
+            "node": "Prepare Completed Run",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Completed Run": {
+      "main": [
+        [
+          {
+            "node": "Append Completed Run",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Error": {
+      "main": [
+        [
+          {
+            "node": "Send Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Error": {
+      "main": [
+        [
+          {
+            "node": "Fail Execution",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Completed Run": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Istanbul",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "tags": []
+}
