@@ -1,12 +1,55 @@
 # Nurederm uygulama görevi
 
 Başlangıç: **25 Eylül 2026 10.00 Europe/Istanbul**. Genel son teslim: **13.00**.
-Bölüm A'nın zorunlu uygulaması, testleri ve gerçek API çıktıları hazır.
-**Bölüm B'nin workflow'u, açıklaması ve çevrimdışı testleri hazır.** Gerçek n8n importu/çalıştırması yapılmadı.
-İlk Bölüm A tesliminde GitHub'a yükleme ve e-posta gönderimi yapılmadı.
-Sonraki kullanıcı talebiyle GitHub hedefi `https://github.com/HzSACAN/nurederm-case.git`, dalı `main` olarak belirlendi.
-E-posta gönderimi hâlâ kapsam dışındadır.
-Bu Bölüm B aşamasında yalnızca yerel commit oluşturuldu; push yapılmadı.
+
+| Bölüm | Mevcut durum ve inceleme bağlantıları |
+| --- | --- |
+| A — Mesaj otomasyonu | Zorunlu uygulama ve gerçek API çıktıları hazır: [talepler.json](A-mesaj-otomasyonu/talepler.json), [ozet.html](A-mesaj-otomasyonu/ozet.html). Son canlı sonuç: 15 mesaj, 12 devir. |
+| B — Fiyat takibi | Pasif [workflow.json](B-n8n/workflow.json), [akış/kurulum açıklaması](B-n8n/akis-aciklama.md) ve çevrimdışı testler hazır. |
+
+Önceki A ve B commit'leri [GitHub main dalına](https://github.com/HzSACAN/nurederm-case/tree/main) gönderildi (`ea38f13` dahil).
+**Bu teslim düzenlemesi henüz gönderilmedi.** Son push ve teslim e-postası sonraki aşamalardır.
+Ürün arama bonusu uygulanmadı. Gerçek n8n importu/çalıştırması ve ekran görüntüsü bonusu henüz yapılmadı;
+birim testler ve kaynak incelemesi bunların yerine geçmez. Proje için nihai tamamlanma saati henüz kaydedilmedi.
+
+## Hızlı kurulum ve doğrulama
+
+Node.js **22.18+** ve npm ile depo kökünden:
+
+```sh
+npm --prefix A-mesaj-otomasyonu ci
+npm --prefix B-n8n ci
+npm test
+npm run typecheck
+# Yukarıdaki iki doğrulama yerine tek komut:
+npm run check
+```
+
+Kök paket bağımlılık içermez; kökte ayrıca kurulum gerekmez. A ve B kendi paket kilitlerinden kurulur.
+`npm test` A ve B testlerini, `npm run typecheck` A TypeScript kontrolünü, `npm run check` üçünü sırayla çalıştırır.
+Bir alt komut başarısızsa üst komut da başarısız olur. Bu komutlar canlı API'ye istek atmaz ve teslim çıktılarını değiştirmez.
+
+A'yı **canlı API ile** çalıştırıp çıktılarını yeniden üretmek için ayrı komut:
+
+```sh
+npm --prefix A-mesaj-otomasyonu run start
+```
+
+B'yi bağımsız doğrulamak için `cd B-n8n`, `npm ci`, `npm test` yeterlidir.
+**Yeni yerel doğrulama — 25.09.2026 11.59 Europe/Istanbul:** B kendi kilidinden `npm ci` ile kuruldu;
+bağımsız 17 testi geçti. Kök `npm run check`: **A 100/100, B 17/17 ve A typecheck başarılı, exit 0**.
+Teslim düzenlemesinin güncel komut sonuçları ve ortam tespiti [teslim çalışma kaydında](TESLIM-CALISMA-GUNLUGU.md);
+önceki A/B doğrulamalarının tarihli kayıtları aşağıda korunur.
+
+Bu makinede npm PATH'te bulunmuyor. Mevcut geçici npm CLI ile kökte
+`node .tmp/package/bin/npm-cli.js run check` çalıştırılabilir. Kök yürütücü npm'in `npm_execpath` değerini
+kullanır; Windows'a özel shell komutu içermez. Başka makinede standart npm komutları kullanılır; `.tmp/` gerekmez.
+
+**Teslim düzenlemesi/ortam tespiti: 25.09.2026 12.03 Europe/Istanbul.** Node 24.19.0 ve geçici npm CLI 10.9.3;
+Docker Desktop 4.72.0 / engine 29.4.2 çalışıyor. Kontrol edilen PATH/global/standart yerel konumlarda n8n,
+Docker'da n8n container/imajı bulunmadı. 5678 portunda dinleyici görünmedi; bağlantı denemeleri zaman aşımına uğradı.
+Sonraki adım ayrı bir n8n Docker örneği kurup workflow'u gerçek credential'larla çalıştırmak ve ekran görüntüsü almak.
+Bu ortam kontrolü kurulumları/container'ları değiştirmedi; gerçek n8n bonusu henüz uygulanmadı.
 
 Asıl gereksinim kaynağı [case-brief.md](case-brief.md), özgün girdi [mesajlar.json](mesajlar.json).
 İki dosya değiştirilmedi; başlangıç/son SHA-256 değerleri çalışma günlüğünde.
@@ -177,17 +220,20 @@ credential'lar n8n arayüzünden seçilir. JSON'da token/şifre veya pinned test
 
 ### Çevrimdışı test
 
-Depo kökünden; A bağımlılıkları kuruluysa ilk komut atlanabilir:
+Depo kökünden yalnızca B'yi kurmak ve test etmek için:
 
 ```sh
-npm --prefix A-mesaj-otomasyonu ci
-npm --prefix A-mesaj-otomasyonu install --no-save --package-lock=false --no-audit --no-fund cheerio@1.0.0-rc.6 html-to-text@9.0.5
-node A-mesaj-otomasyonu/node_modules/vitest/vitest.mjs run --config B-n8n/vitest.config.mjs
+npm --prefix B-n8n ci
+npm --prefix B-n8n test
 ```
 
-Mevcut Vitest kurulumu kullanılır; ikinci bağımlılık ağacı ve A manifest/kilit değişikliği yoktur.
-Ek ayrıştırıcılar yalnızca B testleri içindir; sonra `npm ci` çalıştırılırsa tekrar kurulmaları gerekir.
-Bu makinede npm PATH'te olmadığından kurulum mevcut geçici npm CLI ile yapıldı; gerçek komutlar B günlüğünde/belgesinde.
+B'nin private paketinde Vitest 3.2.7, Cheerio 1.0.0-rc.6 ve html-to-text 9.0.5 sabittir;
+geçişli bağımlılıklar B'nin kendi package-lock.json dosyasında kilitlidir. B artık A'nın node_modules dizinine bağlı değildir.
+B/node_modules Git dışında kalır. A manifesti, kilidi ve davranış testleri değiştirilmedi.
+Önceki geçici bağımlılık kurulumu B çalışma günlüğünde tarihsel kayıt olarak korunur.
+
+Yeni bağımsız paket doğrulaması: **25.09.2026 11.59, `npm ci` ve `npm test` başarılı (17/17)**.
+Kök `npm run check` içinde de aynı 17 test geçti. Aşağıdaki ilk B doğrulaması tarihsel kayıttır.
 
 **25.09.2026 11.29.30 Europe/Istanbul: Vitest 3.2.7, 1 dosya / 17 test başarılı, 3.77 saniye, exit 0.**
 Testler workflow içindeki gerçek Code metinlerini ve HTML selector'larını kullanır. Sentetik fixture'lar

@@ -135,16 +135,17 @@ Ek kontroller: [workflow yürütücüsü](https://github.com/n8n-io/n8n/blob/0c0
 Depo kökünden, standart npm bulunan bir makinede:
 
 ```sh
-npm --prefix A-mesaj-otomasyonu ci
-npm --prefix A-mesaj-otomasyonu install --no-save --package-lock=false --no-audit --no-fund cheerio@1.0.0-rc.6 html-to-text@9.0.5
-node A-mesaj-otomasyonu/node_modules/vitest/vitest.mjs run --config B-n8n/vitest.config.mjs
+npm --prefix B-n8n ci
+npm --prefix B-n8n test
 ```
 
-İlk komut A bağımlılıkları zaten kuruluysa gerekmez. Sonradan `npm ci` çalıştırmak ek test paketlerini kaldırabilir; bu durumda ikinci komutu tekrarlayın. İkinci bir node_modules ağacı kurulmaz; A package.json/package-lock.json değiştirilmez. İki ek paket yalnızca yerel HTML testleri içindir; sürümleri [n8n nodes-base paketindeki](https://github.com/n8n-io/n8n/blob/0c00d3b18c17ce36c62b54fecfa79215f649ebf8/packages/nodes-base/package.json) sürümlerle eşleştirildi. Workflow bunları import etmez.
+B dizininde doğrudan `npm ci` ve `npm test` de kullanılabilir. B'nin private package.json ve package-lock.json dosyaları Vitest 3.2.7, Cheerio 1.0.0-rc.6 ve html-to-text 9.0.5 sürümlerini ve geçişli bağımlılıklarını kalıcı hale getirir. B kendi node_modules dizinini kullanır; A'nın paketlerine veya alias'larına bağlı değildir. A package.json/package-lock.json değiştirilmedi. HTML test paketlerinin sürümleri [n8n nodes-base paketindeki](https://github.com/n8n-io/n8n/blob/0c00d3b18c17ce36c62b54fecfa79215f649ebf8/packages/nodes-base/package.json) sürümlerle eşleşir; workflow bunları import etmez.
 
-Bu makinede npm PATH'te olmadığından kurulum A dizininde `node ../.tmp/package/bin/npm-cli.js install --no-save --package-lock=false --no-audit --no-fund --cache ../.tmp/npm-cache cheerio@1.0.0-rc.6 html-to-text@9.0.5` ile yapıldı (exit 0). Vitest yukarıdaki `node ...` komutuyla çalıştırıldı.
+Bu makinede npm PATH'te olmadığından B dizininde `node ../.tmp/package/bin/npm-cli.js ci --no-audit --no-fund --cache ../.tmp/npm-cache` ve `node ../.tmp/package/bin/npm-cli.js test` kullanılır. Önceki geçici `--no-save` kurulumunun gerçek sonuçları çalışma günlüğünde korunur; artık kurulum talimatı değildir. Kök `npm run check` A/B testleriyle A typecheck'i birlikte çalıştırır. Teslim düzenlemesinin yeni doğrulama sonuçları [teslim çalışma kaydındadır](../TESLIM-CALISMA-GUNLUGU.md).
 
 **25.09.2026 11.29.30 Europe/Istanbul — Vitest 3.2.7: 1 dosya, 17 test başarılı; 3.77 saniye; exit code 0.**
+
+Yeni teslim düzenlemesi doğrulaması: **25.09.2026 11.59.00 — B kendi package-lock.json dosyasından `npm ci` ile kuruldu; bağımsız `npm test` 17/17 geçti (5.25 saniye, exit 0).** Kök `npm run check` de A 100/100, B 17/17 ve A typecheck ile exit 0 tamamlandı. Önceki tarihli sonuçlar korunmuştur; bu kontroller n8n runtime koşumu değildir.
 
 - Gerçek workflow `jsCode` metinleri izole Node VM içinde çalıştırılır. Gerçek HTML selector yapılandırması Cheerio/html-to-text ile uygulanır. Fixture ayrı `tests/fixtures/laptops.html` dosyasındadır; üretim akışında test verisi/pinned data yoktur.
 - Testler seyrek/tek/gelişen sayfalama, kategori sınırı, eksik kart, tam ad/sayı/URL, geçersiz fiyat ve alanlar, ilk çalışma, sırası değişen URL eşleştirmesi, fiyat artış/düşüşü, tamamlanmış run seçimi ve yarım kayıtların dışlanmasını kapsar.
@@ -157,4 +158,4 @@ JSON parse, kaynak incelemesi, birim test ve mock grafik kontrolü **n8n import/
 
 Kaynak site [statik laptop kategorisidir](https://webscraper.io/test-sites/e-commerce/static/computers/laptops). HTML veya URL düzeni değişirse akış ihtiyatlı şekilde hata verir; başka sitelere genel scraper değildir. Tarama sırasında kaynak listenin değişmesi transaction ile önlenemez. Sonraki sayfalara işaret eden bağlantıların tümü siteden kaldırılırsa görünmeyen sayfaların varlığı çıkarılamaz. Bütün ürünler ve geçmiş satırlar bellekte işlendiğinden büyük ölçek için uygun değildir; bu case için yeterli basitlik seçildi.
 
-Tek execution kuralı ve olası tekrar bildirim davranışı yukarıda açıklandı. Canlı n8n sonucu/ekran görüntüsü yoktur. Başarısız denemeler ve yerel commit kayıtları [CALISMA-GUNLUGU.md](CALISMA-GUNLUGU.md), kullanıcı talebi aynen [promptlar/B-n8n.md](../promptlar/B-n8n.md) içindedir. Bu aşamada push ve e-posta gönderilmedi; Bölüm A kodu ve başarılı canlı çıktıları değiştirilmedi.
+Tek execution kuralı ve olası tekrar bildirim davranışı yukarıda açıklandı. Canlı n8n sonucu/ekran görüntüsü yoktur. Başarısız denemeler ve yerel commit kayıtları [CALISMA-GUNLUGU.md](CALISMA-GUNLUGU.md), kullanıcı talebi aynen [promptlar/B-n8n.md](../promptlar/B-n8n.md) içindedir. Önceki A/B commit'leri sonraki kullanıcı onayıyla GitHub'a gönderildi (`ea38f13` dahil). Yeni teslim düzenlemesi henüz gönderilmedi; son push, gerçek n8n bonusu ve e-posta sonraki adımlardır. Bölüm A kodu ve başarılı canlı çıktıları korunuyor.
