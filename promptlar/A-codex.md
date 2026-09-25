@@ -105,3 +105,5 @@ npm test ve npm run typecheck çalıştır. Canlı koşumu önce geçici bir ç�
 README'deki canlı sonuç sayıları, zaman damgası ve kararları gerçek yeni sonuçlara göre güncelle. Canlı veriler aynıysa devir sayısının 12 olması beklenir; sayıyı hardcode etme.
 
 Küçük bir düzeltme commit'i oluştur ve gerçek komut sonuçlarını bildir. Bölüm B'ye bu promptta başlama.
+
+yapılan düzeltmeler doğru uygulanmış şimdi değişiklikleri pushlayabilirsin bir sonraki promptta B bölümüne geçeceğiz. değişiklikleri pushla ve bekle
