@@ -45,12 +45,12 @@ export async function processMessage(message: Message, lookup: CartLookup): Prom
         } else if (response.cart.userId !== message.musteri_id) {
           // Do not copy, stringify or log cart data before authorization succeeds.
           result.devret = true;
-          result.cevap_taslagi = 'Bu sipariş için sahiplik doğrulaması sağlanamadı. Talebinizi güvenli kontrol için temsilcimize yönlendiriyoruz.';
+          result.cevap_taslagi = 'Siparişin size ait olduğunu doğrulayamadık. Kontrol için talebinizi temsilcimize yönlendiriyoruz.';
           result.not = 'Sahiplik eşleşmedi; sipariş ayrıntıları paylaşılmadı.';
         } else {
           const products = response.cart.products.map(product => `${product.title} (${product.quantity} adet)`).join('; ');
-          result.cevap_taslagi = `Sipariş içeriğiniz: ${products}. Toplam: ${response.cart.total}. Bu test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.`;
-          result.not = 'Sipariş sahipliği doğrulandı. Tutar API total alanından alındı; kargo durumu doğrulanamıyor.';
+          result.cevap_taslagi = `Sipariş içeriğiniz: ${products}. Toplam: ${response.cart.total}. Kargo durumunuzu şu anda doğrulayamıyoruz.`;
+          result.not = 'Sipariş sahipliği doğrulandı. Tutar API total alanından alındı. Test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.';
         }
       } catch {
         // Injected adapters may throw too. Never expose their error messages.
@@ -60,6 +60,10 @@ export async function processMessage(message: Message, lookup: CartLookup): Prom
       }
     }
     result.not += priceNote;
+    if (classification.secondaryPrice) {
+      result.devret = true;
+      result.cevap_taslagi += ' Fiyat talebinizi temsilcimize yönlendiriyoruz.';
+    }
     return result;
   }
   if (result.konu === 'urun-sorusu') {

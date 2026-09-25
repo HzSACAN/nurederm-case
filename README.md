@@ -67,7 +67,9 @@ ID veya tam mesaj eşleştirme yoktur. Türkçe harfler/şapka işaretleri norma
 Öncelik: **istenmeyen-etki > iade-sikayet > somut sipariş sorgusu > fiyat > urun-sorusu > diger**.
 Hassas konular yalnızca temsilciye yönlendirilir; ürün önerisi, teşhis, tedavi veya kullanım tavsiyesi verilmez ve API çağrılmaz.
 “Siparişim hâlâ ulaşmadı” sipariş sorgusudur; açık iade/hasar/şikâyet ifadeleri ayrı kurallardır.
-Fiyatla birlikte somut sipariş sorusu varsa tek konu `siparis-durumu` olur; fiyat isteği `not` alanına yazılır.
+Fiyatla birlikte somut sipariş sorusu varsa tek konu `siparis-durumu` olur. Fiyat otomatik yanıtlanamadığından
+`devret: true` seçilir; cevapta fiyat talebinin temsilciye yönlendirildiği belirtilir ve `not` alanında kaydedilir.
+Yetkili siparişin ürünleri, miktarları ve toplamı yine gösterilir; sahiplik eşleşmezse sipariş ayrıntıları paylaşılmaz.
 
 Genel kargo firması, hayvan deneyi/marka politikası ve yalnızca genel iade politikası soruları `diger` olur.
 Genel politika ifadesi yanında açık kişisel iade talebi varsa hassas iade önceliği korunur.
@@ -78,7 +80,7 @@ temsilci doğrulanmış bilgiyi sağlamalıdır. Bu, zorunlu hassas devirlere ek
 
 Sipariş numarası yalnızca `12 numaralı siparişim`, `sipariş no: 12`, `order #3` gibi bağlamlardan çıkarılır.
 Hacim, süre veya müşteri numarası kullanılmaz. Numara eksikse **sipariş numarası** istenir ve yeni yanıt beklenir
-(`devret: false`).
+(`devret: false`; aynı mesajda temsilci gerektiren fiyat talebi de varsa `devret: true`).
 Birden fazla farklı sipariş numarası varsa sorgu yapılmadan devredilir; aynı numaranın tekrarı tek sorgudur.
 
 ## Güvenlik ve API davranışı
@@ -88,7 +90,8 @@ Birden fazla farklı sipariş numarası varsa sorgu yapılmadan devredilir; ayn�
 - **`userId === musteri_id` kontrolü geçmeden** ürün, miktar veya tutar cevap alanlarına eklenmez.
   Eşleşmezse yalnızca genel sahiplik uyarısı ve devir üretilir; gerçek sahibin kimliği açıklanmaz.
 - Sahiplik eşleşince ürün başlıkları, miktarlar ve doğrudan API `total` değeri kullanılır. Ürünlerden yeni toplam hesaplanmaz.
-  Para birimi, kargo durumu, takip numarası veya teslim tarihi uydurulmaz; eksiklik cevapta belirtilir.
+  Müşteriye yalnızca “Kargo durumunuzu şu anda doğrulayamıyoruz.” denir; para birimi veya teslim tarihi uydurulmaz.
+  Test API'si, alan adları ve teknik eksiklikler müşteriye yönelik `cevap_taslagi` yerine temsilcinin `not` alanında kalır.
 - İstek başına **5 saniye timeout**, ilk denemeye ek **en fazla 2 retry**, **200/400 ms backoff** uygulanır.
   Timeout başlık ve gövde okumasını kapsar. Bağlantı hatası, timeout, 429 ve 5xx tekrar denenir.
   400/401/403/404 ve bozuk yanıt körlemesine tekrar denenmez. `Retry-After` bu küçük uygulamada yorumlanmaz.
@@ -106,27 +109,34 @@ DummyJSON herkese açık sentetik bir test servisidir. Üretilen cevaplar **tasl
 
 ## Doğrulama ve canlı sonuç
 
-25 Eylül 2026 10.21 Europe/Istanbul itibarıyla **Vitest 3.2.7: 4 dosya, 100 test başarılı**;
+25 Eylül 2026 10.42 Europe/Istanbul itibarıyla **Vitest 3.2.7: 4 dosya, 100 test başarılı**;
 `npm run typecheck` başarılı. Testler altı konuyu, TR/EN örnekleri, hassas önceliği ve API'nin çağrılmamasını,
 numara ayrımını, iki ayrı sahiplik fixture'ını, ürün/miktar/total kullanımını, JSON/HTML/log gizliliğini,
 404/timeout/bağlantı/429/5xx/bozuk yanıtları, sınırlı retry'ı, işlem devamlılığını ve HTML escape'i kapsar.
 Verilen 15 mesaj ayrıca mock adaptörle sıra, tam alanlar, boolean devir ve özet tutarlılığı açısından test edilir.
+İnceleme düzeltmesinde mevcut testler güncellendi: sipariş+fiyat devri, sipariş içeriğinin korunması,
+teknik açıklamaların müşteri taslağından çıkarılması ve fiyat içeren sahiplik uyuşmazlığında gizlilik doğrulandı.
+Hassas mesaj testleri de geçti; test sayısı değişmedi.
 
 `tests/fixtures/carts.ts` **yalnızca sentetik test verisidir**. Runtime kodu fixture içe aktarmaz.
 15 mesajlık mock testte tüm siparişlerin bulunamadığı senaryo seçildiğinden 14 devir beklenir;
 bu sayı aşağıdaki canlı sonuçtan bağımsızdır.
 
-**Canlı çalıştırma: 25 Eylül 2026 yaklaşık 10.22 Europe/Istanbul.** İlk sandbox çalıştırmasında
-HTTP yanıtı alınamadı (bağlantı hatası); güvenli hata çıktıları üretildi. Ağ izniyle yapılan tekrar gerçek API'ye ulaştı
-ve teslim edilen çıktılar bu başarılı canlı çalıştırmayla yenilendi. Otomatik mock/fallback kullanılmadı.
+**Son canlı çalıştırma: 25 Eylül 2026 10.42 Europe/Istanbul.** İnceleme düzeltmesi sonrası gerçek API koşumu
+`npm run start -- ../mesajlar.json ../.tmp/A-review-live` ile önce geçici dizine yapıldı.
+HTTP sonuçları, 15 kaydın sırası/alanları, müşteri metinleri, fiyat devri ve JSON/HTML tutarlılığı doğrulandı.
+Üç yetkili siparişin ürünleri, miktarları ve toplamları önceki canlı çıktılarla aynı kaldı.
+Bu kontroller geçene kadar önceki teslim dosyaları değiştirilmedi; ardından doğrulanan iki dosya teslim dizinine kopyalandı.
+Otomatik mock/fallback kullanılmadı. Önceki 10.22 koşumundaki sandbox engeli ve çözümü çalışma günlüğünde korunuyor.
 
 | Canlı kontrol | Sonuç |
 | --- | --- |
 | Sipariş sorguları | 4 × HTTP 200, 1 × HTTP 404; her biri tek deneme |
 | Mesaj 1 | Sahiplik eşleşmedi; ayrıntılar paylaşılmadan devir |
 | Mesaj 2, 6, 8 | Sahiplik eşleşti; ürün/miktar/total kullanıldı |
+| Mesaj 8 | Ek fiyat talebi nedeniyle devir; konu hâlâ sipariş durumu |
 | Mesaj 3 | Sipariş bulunamadı; HTTP 404 ve devir |
-| Çıktı | 15 mesaj, girdi sırası korundu, 11 devir |
+| Çıktı | 15 mesaj, girdi sırası korundu, çıktı verisinden hesaplanan 12 devir |
 | Konular | ürün 3, fiyat 2, sipariş 5, iade/şikâyet 1, istenmeyen etki 1, diğer 3 |
 
 Teslim çıktıları: [talepler.json](A-mesaj-otomasyonu/talepler.json) ve [ozet.html](A-mesaj-otomasyonu/ozet.html).
@@ -143,4 +153,5 @@ CLI küçük JSON dosyasını belleğe alır ve mesajları sırayla işler; kuyr
 Kullanıcı promptunun tam kaydı [promptlar/A-codex.md](promptlar/A-codex.md) içinde.
 Başarısız denemeler, düzeltmeler ve komut sonuçları [çalışma günlüğünde](A-mesaj-otomasyonu/CALISMA-GUNLUGU.md).
 
-Bölüm A tamamlama kaydı: 25.09.2026 10.27 Europe/Istanbul.
+İlk Bölüm A tamamlama kaydı: 25.09.2026 10.27 Europe/Istanbul.
+İnceleme düzeltmesi doğrulaması: 25.09.2026 10.42 Europe/Istanbul.

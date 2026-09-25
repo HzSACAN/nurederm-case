@@ -92,3 +92,16 @@ Testlerde yalnızca verilen mesajlara dayanma; farklı ID ve ifadelerle birkaç 
 - Sonuçta değişen dosyaları, çalıştırılan komutları, gerçek test sonuçlarını, canlı çalışma durumunu ve varsa açık sorunları kısa raporla.
 
 şuanki değişiklikleri  "[https://github.com/HzSACAN/nurederm-case.git](https://github.com/HzSACAN/nurederm-case.git)" reposuna main branchine pushla
+
+Bölüm A incelemesinde iki tutarlılık sorunu bulundu. Bu promptu promptlar/A-codex.md dosyasına aynen ekle. Mevcut mimariyi koruyarak yalnızca aşağıdaki davranışları düzelt:
+
+1. Sipariş ve fiyat sorusunu birlikte içeren mesajlarda, fiyat talebi otomatik yanıtlanamayıp temsilciye bırakılıyorsa devret: true olsun. Konu siparis-durumu olarak kalsın. Yetkili siparişin ürünlerini ve toplamını göster; cevap taslağında fiyat talebinin temsilciye yönlendirildiğini de belirt. Sahiplik eşleşmediğinde hiçbir sipariş ayrıntısını paylaşma.
+2. Müşteriye yönelik cevap\_taslagi alanlarından “test API”, alan adı ve teknik sistem açıklamalarını çıkar. Gerekli teknik açıklamalar not alanında kalsın. Sipariş içeriği ve total tutarı korunsun; kargo durumunun doğrulanamadığı müşteriye anlaşılır şekilde söylensin. Para birimi veya teslim tarihi uydurma.
+
+Bu iki davranış için anlamlı testler ekle/güncelle. Sahiplik uyuşmazlığı ve hassas mesaj testlerinin geçmeye devam ettiğini doğrula. Test sayısını artırmayı hedefleme.
+
+npm test ve npm run typecheck çalıştır. Canlı koşumu önce geçici bir çıktı dizinine yap; doğruladıktan sonra teslim talepler.json ve ozet.html dosyalarını güncelle. API erişimi başarısızsa mevcut başarılı canlı çıktıları ezme; engeli açıkça raporla. Sahte yanıtları canlı çıktı olarak kaydetme.
+
+README'deki canlı sonuç sayıları, zaman damgası ve kararları gerçek yeni sonuçlara göre güncelle. Canlı veriler aynıysa devir sayısının 12 olması beklenir; sayıyı hardcode etme.
+
+Küçük bir düzeltme commit'i oluştur ve gerçek komut sonuçlarını bildir. Bölüm B'ye bu promptta başlama.

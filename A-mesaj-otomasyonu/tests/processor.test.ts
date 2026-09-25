@@ -20,19 +20,29 @@ describe('mesaj güvenliği ve işlem devamlılığı', () => {
     expect(result.cevap_taslagi).toBe('Mesajınızı müşteri temsilcimize yönlendiriyoruz. Temsilcimiz talebinizi değerlendirecek.');
     expect(lookup).not.toHaveBeenCalled();
   });
-  it('fiyat+sipariş tek konu ve ikincil not üretir', async () => {
+  it('fiyat+sipariş yetkili içeriği korur ve fiyat için açıkça devreder', async () => {
     const lookup = vi.fn<CartLookup>().mockResolvedValue({ ok: true, cart: ownedCart });
     const result = await processMessage(message('42 numaralı siparişim nerede, serum fiyatı nedir?'), lookup);
     expect(result.konu).toBe('siparis-durumu');
+    expect(result.devret).toBe(true);
+    expect(result.cevap_taslagi).toContain('Test serum (2 adet)');
+    expect(result.cevap_taslagi).toContain('Test tonik (3 adet)');
+    expect(result.cevap_taslagi).toContain('Toplam: 345.67');
+    expect(result.cevap_taslagi).toContain('Fiyat talebinizi temsilcimize yönlendiriyoruz.');
+    expect(result.cevap_taslagi).toContain('Kargo durumunuzu şu anda doğrulayamıyoruz.');
+    expect(result.cevap_taslagi).not.toMatch(/API|HTTP|dummyjson|\btotal\b|userId|products|₺|\$|€|\bTL\b|USD/i);
     expect(result.not).toContain('İkincil fiyat talebi');
     expect(lookup).toHaveBeenCalledExactlyOnceWith(42);
   });
   it('eksik numara için müşteri ID kullanmaz', async () => {
     const lookup = vi.fn<CartLookup>();
-    const result = await processMessage(message('Müşteri numaram 71. 200 ml serum siparişim hâlâ ulaşmadı'), lookup);
-    expect(result.konu).toBe('siparis-durumu');
-    expect(result.devret).toBe(false);
-    expect(result.cevap_taslagi).toContain('sipariş numaranızı');
+    for (const priceQuestion of ['', ' Ayrıca serum fiyatı nedir?']) {
+      const result = await processMessage(message('Müşteri numaram 71. 200 ml serum siparişim hâlâ ulaşmadı' + priceQuestion), lookup);
+      expect(result.konu).toBe('siparis-durumu');
+      expect(result.devret).toBe(priceQuestion.length > 0);
+      expect(result.cevap_taslagi).toContain('sipariş numaranızı');
+      if (priceQuestion) expect(result.cevap_taslagi).toContain('Fiyat talebinizi temsilcimize yönlendiriyoruz.');
+    }
     expect(lookup).not.toHaveBeenCalled();
   });
   it('birden fazla farklı sipariş için seçim yapmadan devreder', async () => {
@@ -54,7 +64,10 @@ describe('mesaj güvenliği ve işlem devamlılığı', () => {
     expect(result.cevap_taslagi).toContain('Test serum (2 adet)');
     expect(result.cevap_taslagi).toContain('Test tonik (3 adet)');
     expect(result.cevap_taslagi).toContain('Toplam: 345.67');
-    expect(result.cevap_taslagi).toContain('kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor');
+    expect(result.cevap_taslagi).toContain('Kargo durumunuzu şu anda doğrulayamıyoruz.');
+    expect(result.cevap_taslagi).not.toMatch(/API|HTTP|dummyjson|\btotal\b|userId|products/i);
+    expect(result.not).toContain('API total');
+    expect(result.not).toContain('Test API');
     expect(result.cevap_taslagi).not.toMatch(/₺|\$|€|\bTL\b|USD|yarın|kargoya verildi/);
   });
   it('farklı sahip mockunda bütün çıktı alanları, HTML ve loglar güvenlidir', async () => {
@@ -65,15 +78,25 @@ describe('mesaj güvenliği ve işlem devamlılığı', () => {
         fetch: async () => ({ status: 200, json: async (): Promise<unknown> => otherOwnersCart }),
         onEvent: event => logs.push(event),
       });
-      const result = await processMessage(message('42 numaralı siparişim nerede?'), client);
-      expect(result.devret).toBe(true);
-      expect(result.not).toContain('Sahiplik eşleşmedi');
-      const allGenerated = JSON.stringify(result) + renderHtml([result]) + JSON.stringify(logs)
+      const results = await processMessages([
+        message('42 numaralı siparişim nerede?'),
+        { ...message('42 numaralı siparişim nerede, serum fiyatı nedir?'), id: 8002 },
+      ], client);
+      for (const result of results) {
+        expect(result.konu).toBe('siparis-durumu');
+        expect(result.devret).toBe(true);
+        expect(result.not).toContain('Sahiplik eşleşmedi');
+      }
+      expect(results[1]?.cevap_taslagi).toContain('Fiyat talebinizi temsilcimize yönlendiriyoruz.');
+      const allGenerated = JSON.stringify(results) + renderHtml(results) + JSON.stringify(logs)
         + JSON.stringify(consoleSpies.map(spy => spy.mock.calls));
       for (const secret of ['GİZLİ-ÜRÜN', 'secret()', '91827.46', '987654321', '8675309']) {
         expect(allGenerated).not.toContain(secret);
       }
-      expect(logs).toEqual([{ kind: 'success', status: 200, attempts: 1 }]);
+      expect(logs).toEqual([
+        { kind: 'success', status: 200, attempts: 1 },
+        { kind: 'success', status: 200, attempts: 1 },
+      ]);
     } finally { consoleSpies.forEach(spy => spy.mockRestore()); }
   });
 

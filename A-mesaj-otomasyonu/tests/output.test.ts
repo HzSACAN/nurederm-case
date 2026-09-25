@@ -24,6 +24,7 @@ describe('girdi ve özet sözleşmesi', () => {
       expect(TOPICS).toContain(record.konu);
       expect(typeof record.devret).toBe('boolean');
       expect(typeof record.cevap_taslagi).toBe('string');
+      expect(record.cevap_taslagi).not.toMatch(/API|HTTP|dummyjson|\btotal\b|userId|products/i);
       expect(typeof record.not).toBe('string');
     }
     expect(lookup.mock.calls).toEqual([[12], [5], [9999], [3], [4]]);

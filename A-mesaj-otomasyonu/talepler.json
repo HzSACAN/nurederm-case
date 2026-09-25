@@ -3,15 +3,15 @@
     "id": 1,
     "konu": "siparis-durumu",
     "devret": true,
-    "cevap_taslagi": "Bu sipariş için sahiplik doğrulaması sağlanamadı. Talebinizi güvenli kontrol için temsilcimize yönlendiriyoruz.",
+    "cevap_taslagi": "Siparişin size ait olduğunu doğrulayamadık. Kontrol için talebinizi temsilcimize yönlendiriyoruz.",
     "not": "Sahiplik eşleşmedi; sipariş ayrıntıları paylaşılmadı."
   },
   {
     "id": 2,
     "konu": "siparis-durumu",
     "devret": false,
-    "cevap_taslagi": "Sipariş içeriğiniz: Samsung Galaxy Tab White (4 adet); Soft Drinks (4 adet); Powder Canister (4 adet). Toplam: 1467.88. Bu test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.",
-    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı; kargo durumu doğrulanamıyor."
+    "cevap_taslagi": "Sipariş içeriğiniz: Samsung Galaxy Tab White (4 adet); Soft Drinks (4 adet); Powder Canister (4 adet). Toplam: 1467.88. Kargo durumunuzu şu anda doğrulayamıyoruz.",
+    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı. Test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor."
   },
   {
     "id": 3,
@@ -38,8 +38,8 @@
     "id": 6,
     "konu": "siparis-durumu",
     "devret": false,
-    "cevap_taslagi": "Sipariş içeriğiniz: Fish Steak (1 adet); iPhone 13 Pro (1 adet); Realme X (1 adet); Man Short Sleeve Shirt (5 adet); Dior J'adore (2 adet); Party Glasses (5 adet). Toplam: 1794.85. Bu test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.",
-    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı; kargo durumu doğrulanamıyor."
+    "cevap_taslagi": "Sipariş içeriğiniz: Fish Steak (1 adet); iPhone 13 Pro (1 adet); Realme X (1 adet); Man Short Sleeve Shirt (5 adet); Dior J'adore (2 adet); Party Glasses (5 adet). Toplam: 1794.85. Kargo durumunuzu şu anda doğrulayamıyoruz.",
+    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı. Test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor."
   },
   {
     "id": 7,
@@ -51,9 +51,9 @@
   {
     "id": 8,
     "konu": "siparis-durumu",
-    "devret": false,
-    "cevap_taslagi": "Sipariş içeriğiniz: Sports Sneakers Off White Red (3 adet); Dior J'adore (4 adet). Toplam: 689.93. Bu test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.",
-    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı; kargo durumu doğrulanamıyor. İkincil fiyat talebi var; güncel fiyat temsilci tarafından doğrulanmalı."
+    "devret": true,
+    "cevap_taslagi": "Sipariş içeriğiniz: Sports Sneakers Off White Red (3 adet); Dior J'adore (4 adet). Toplam: 689.93. Kargo durumunuzu şu anda doğrulayamıyoruz. Fiyat talebinizi temsilcimize yönlendiriyoruz.",
+    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı. Test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor. İkincil fiyat talebi var; güncel fiyat temsilci tarafından doğrulanmalı."
   },
   {
     "id": 9,
