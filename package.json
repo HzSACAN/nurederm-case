@@ -1,0 +1,12 @@
+{
+  "name": "nurederm-case",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "test": "node scripts/check.mjs test",
+    "typecheck": "node scripts/check.mjs typecheck",
+    "check": "node scripts/check.mjs check"
+  }
+}
