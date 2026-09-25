@@ -2,10 +2,11 @@
 
 Başlangıç: **25 Eylül 2026 10.00 Europe/Istanbul**. Genel son teslim: **13.00**.
 Bölüm A'nın zorunlu uygulaması, testleri ve gerçek API çıktıları hazır.
-**Bölüm B henüz tamamlanmadı.** Bu aşamada n8n workflow'u hazırlanmadı.
+**Bölüm B'nin workflow'u, açıklaması ve çevrimdışı testleri hazır.** Gerçek n8n importu/çalıştırması yapılmadı.
 İlk Bölüm A tesliminde GitHub'a yükleme ve e-posta gönderimi yapılmadı.
 Sonraki kullanıcı talebiyle GitHub hedefi `https://github.com/HzSACAN/nurederm-case.git`, dalı `main` olarak belirlendi.
 E-posta gönderimi hâlâ kapsam dışındadır.
+Bu Bölüm B aşamasında yalnızca yerel commit oluşturuldu; push yapılmadı.
 
 Asıl gereksinim kaynağı [case-brief.md](case-brief.md), özgün girdi [mesajlar.json](mesajlar.json).
 İki dosya değiştirilmedi; başlangıç/son SHA-256 değerleri çalışma günlüğünde.
@@ -14,7 +15,7 @@ Asıl gereksinim kaynağı [case-brief.md](case-brief.md), özgün girdi [mesajl
 
 Node.js **22.18 veya üzeri** ve npm gerekir; bu makinede Node **24.19.0** ve npm **10.9.3** ile çalıştırıldı.
 Node'un yerleşik TypeScript çalıştırması kullanılır; build, web sunucusu, veritabanı veya frontend gerekmez.
-Runtime bağımlılığı yoktur. Geliştirme bağımlılıkları TypeScript, Node tipleri ve Vitest'tir; sürümler paket kilidinde sabitlenmiştir.
+Bölüm A'nın runtime bağımlılığı yoktur. Geliştirme bağımlılıkları TypeScript, Node tipleri ve Vitest'tir; sürümler paket kilidinde sabitlenmiştir.
 
 Depo kökünden:
 
@@ -147,7 +148,7 @@ Bu nedenle tarayıcı görünümü doğrulanmış olarak raporlanmıyor.
 ## Sınırlamalar ve kayıtlar
 
 Kurallar tüm doğal dil, yazım hatası veya olumsuzlama çeşitlerini kapsamaz; hassas sözcükler ihtiyatlı biçimde devre yol açabilir.
-Ürün bilgisi/fiyat entegrasyonu, otomatik cevap gönderimi, gerçek kargo takibi ve Bölüm B bu teslim aşamasında yoktur.
+Bölüm A'da ürün bilgisi/fiyat entegrasyonu, otomatik cevap gönderimi ve gerçek kargo takibi yoktur.
 CLI küçük JSON dosyasını belleğe alır ve mesajları sırayla işler; kuyruk, paralel işleme veya kalıcı veritabanı eklenmedi.
 
 Kullanıcı promptunun tam kaydı [promptlar/A-codex.md](promptlar/A-codex.md) içinde.
@@ -155,3 +156,55 @@ Başarısız denemeler, düzeltmeler ve komut sonuçları [çalışma günlüğ�
 
 İlk Bölüm A tamamlama kaydı: 25.09.2026 10.27 Europe/Istanbul.
 İnceleme düzeltmesi doğrulaması: 25.09.2026 10.42 Europe/Istanbul.
+
+## Bölüm B — n8n fiyat takibi
+
+[workflow.json](B-n8n/workflow.json) pasif (`active: false`) teslim edildi. Günde 09.00 Europe/Istanbul tetiklemesi,
+dinamik ve eksiksiz sayfalama, kart bazında HTML çıkarımı, alan doğrulama, URL üzerinden fiyat karşılaştırması,
+Google Sheets snapshot/tamamlanma kayıtları ve bağlı Telegram başarı/hata yolları içerir.
+Hata bildirimi de başarısız olsa çalışma Stop And Error ile başarısız biter.
+
+Başlangıç şablonu: Tony Paul'un
+[Competitor price monitoring with web scraping,Google Sheets & Telegram](https://n8n.io/workflows/4640-competitor-price-monitoring-with-web-scrapinggoogle-sheets-and-telegram/).
+Şablon sayfası ve özgün JSON gerçekten indirildi/incelendi; n8n'e import edilmedi. Özgün kimlik/credential'lar taşınmadı.
+Korunan ve değiştirilen mantık, tablo sütunları, import/kurulum adımları, hata sırası ve sınırlamalar
+[akis-aciklama.md](B-n8n/akis-aciklama.md) içinde.
+
+Akışın Code düğümleri harici script/npm/DOM/fetch gerektirmez; ağ ve HTML işleri n8n HTTP Request/HTML düğümlerindedir.
+Google Sheets/Telegram credential'ları **yalnızca akışı gerçekten çalıştırmak için** gerekir;
+dosyaları incelemek ve çevrimdışı testleri çalıştırmak için gerekmez. İki ID Configuration düğümünden,
+credential'lar n8n arayüzünden seçilir. JSON'da token/şifre veya pinned test verisi bulunmaz.
+
+### Çevrimdışı test
+
+Depo kökünden; A bağımlılıkları kuruluysa ilk komut atlanabilir:
+
+```sh
+npm --prefix A-mesaj-otomasyonu ci
+npm --prefix A-mesaj-otomasyonu install --no-save --package-lock=false --no-audit --no-fund cheerio@1.0.0-rc.6 html-to-text@9.0.5
+node A-mesaj-otomasyonu/node_modules/vitest/vitest.mjs run --config B-n8n/vitest.config.mjs
+```
+
+Mevcut Vitest kurulumu kullanılır; ikinci bağımlılık ağacı ve A manifest/kilit değişikliği yoktur.
+Ek ayrıştırıcılar yalnızca B testleri içindir; sonra `npm ci` çalıştırılırsa tekrar kurulmaları gerekir.
+Bu makinede npm PATH'te olmadığından kurulum mevcut geçici npm CLI ile yapıldı; gerçek komutlar B günlüğünde/belgesinde.
+
+**25.09.2026 11.29.30 Europe/Istanbul: Vitest 3.2.7, 1 dosya / 17 test başarılı, 3.77 saniye, exit 0.**
+Testler workflow içindeki gerçek Code metinlerini ve HTML selector'larını kullanır. Sentetik fixture'lar
+`B-n8n/tests/fixtures/` altında ayrıdır. Mock connector'larla bağlı grafik; sayfalama, alan doğrulama,
+yeni/değişen/değişmeyen fiyatlar, önceki başarılı run seçimi, yarım kayıtlar ve hata yolları sınandı.
+
+Düğüm şemaları ve yürütme davranışı resmi **n8n@1.112.6** kaynaklarıyla kontrol edildi
+(`0c00d3b18c17ce36c62b54fecfa79215f649ebf8`). Gerçek ilk sayfanın indirilmiş HTML'inde 11.30.37'de
+6 kart doğru çıkarıldı ve son sayfa bağlantısı 20 olarak keşfedildi; bu değerler akışta sabitlenmedi.
+**JSON parse ve testler, gerçek n8n import/runtime doğrulaması değildir.** Bütün site üzerinde canlı tarama,
+Sheets yazımı veya Telegram gönderimi yapılmadı. Bunlar gerçek kullanım öncesi kalan doğrulamalardır.
+
+İlk çalışmada bütün ürünler yeni kabul edilir. Snapshot → bildirim → tamamlanma kaydı sırası kullanılır;
+yarım yazımlar sonraki çalışmada referans olmaz. Bildirim başarılı olup tamamlanma kaydı başarısızsa tekrar bildirim olabilir.
+Aynı spreadsheet için eşzamanlı execution çalıştırılmamalıdır; bu küçük case'te kilit/kuyruk eklenmedi.
+
+Bölüm B başlangıcı: 25.09.2026 11.03 Europe/Istanbul.
+Bölüm B tasarım/test/belgeleme tamamlama kaydı: 25.09.2026 11.36 Europe/Istanbul.
+Promptun tam kaydı [promptlar/B-n8n.md](promptlar/B-n8n.md), başarısız denemeler ve gerçek sonuçlar
+[B çalışma günlüğünde](B-n8n/CALISMA-GUNLUGU.md). Bölüm A'nın yukarıdaki doğrulama kayıtları, kodu ve başarılı canlı çıktıları korundu.
