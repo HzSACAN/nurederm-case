@@ -1,0 +1,107 @@
+[
+  {
+    "id": 1,
+    "konu": "siparis-durumu",
+    "devret": true,
+    "cevap_taslagi": "Bu sipariş için sahiplik doğrulaması sağlanamadı. Talebinizi güvenli kontrol için temsilcimize yönlendiriyoruz.",
+    "not": "Sahiplik eşleşmedi; sipariş ayrıntıları paylaşılmadı."
+  },
+  {
+    "id": 2,
+    "konu": "siparis-durumu",
+    "devret": false,
+    "cevap_taslagi": "Sipariş içeriğiniz: Samsung Galaxy Tab White (4 adet); Soft Drinks (4 adet); Powder Canister (4 adet). Toplam: 1467.88. Bu test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.",
+    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı; kargo durumu doğrulanamıyor."
+  },
+  {
+    "id": 3,
+    "konu": "siparis-durumu",
+    "devret": true,
+    "cevap_taslagi": "Belirttiğiniz sipariş bulunamadı. Numaranın kontrol edilmesi için talebinizi temsilcimize yönlendiriyoruz.",
+    "not": "Sipariş bulunamadı; HTTP 404; deneme: 1. Temsilci kontrolü gerekli."
+  },
+  {
+    "id": 4,
+    "konu": "istenmeyen-etki",
+    "devret": true,
+    "cevap_taslagi": "Mesajınızı müşteri temsilcimize yönlendiriyoruz. Temsilcimiz talebinizi değerlendirecek.",
+    "not": "Hassas konu: insan değerlendirmesi gerekli. API sorgusu yapılmadı."
+  },
+  {
+    "id": 5,
+    "konu": "iade-sikayet",
+    "devret": true,
+    "cevap_taslagi": "Mesajınızı müşteri temsilcimize yönlendiriyoruz. Temsilcimiz talebinizi değerlendirecek.",
+    "not": "Hassas konu: insan değerlendirmesi gerekli. API sorgusu yapılmadı."
+  },
+  {
+    "id": 6,
+    "konu": "siparis-durumu",
+    "devret": false,
+    "cevap_taslagi": "Sipariş içeriğiniz: Fish Steak (1 adet); iPhone 13 Pro (1 adet); Realme X (1 adet); Man Short Sleeve Shirt (5 adet); Dior J'adore (2 adet); Party Glasses (5 adet). Toplam: 1794.85. Bu test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.",
+    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı; kargo durumu doğrulanamıyor."
+  },
+  {
+    "id": 7,
+    "konu": "diger",
+    "devret": false,
+    "cevap_taslagi": "",
+    "not": "Olası spam; yanıt önerilmedi ve dış bağlantılar ziyaret edilmedi."
+  },
+  {
+    "id": 8,
+    "konu": "siparis-durumu",
+    "devret": false,
+    "cevap_taslagi": "Sipariş içeriğiniz: Sports Sneakers Off White Red (3 adet); Dior J'adore (4 adet). Toplam: 689.93. Bu test API’sinde kargo durumu, takip numarası, teslim tarihi ve para birimi bilgisi bulunmuyor.",
+    "not": "Sipariş sahipliği doğrulandı. Tutar API total alanından alındı; kargo durumu doğrulanamıyor. İkincil fiyat talebi var; güncel fiyat temsilci tarafından doğrulanmalı."
+  },
+  {
+    "id": 9,
+    "konu": "urun-sorusu",
+    "devret": true,
+    "cevap_taslagi": "Ürün hakkındaki sorunuzu aldık. Doğrulanmış ürün bilgisi için talebinizi temsilcimize yönlendiriyoruz.",
+    "not": "Ürün arama bonusu uygulanmadı; içerik, stok veya kullanım uygunluğu hakkında bilgi üretilmedi."
+  },
+  {
+    "id": 10,
+    "konu": "fiyat",
+    "devret": true,
+    "cevap_taslagi": "Güncel fiyat veya indirim bilgisini doğrulamak için talebinizi temsilcimize yönlendiriyoruz.",
+    "not": "Doğrulanmış fiyat/indirim kaynağı yok; fiyat ya da indirim kodu uydurulmadı."
+  },
+  {
+    "id": 11,
+    "konu": "urun-sorusu",
+    "devret": true,
+    "cevap_taslagi": "Ürün hakkındaki sorunuzu aldık. Doğrulanmış ürün bilgisi için talebinizi temsilcimize yönlendiriyoruz.",
+    "not": "Ürün arama bonusu uygulanmadı; içerik, stok veya kullanım uygunluğu hakkında bilgi üretilmedi."
+  },
+  {
+    "id": 12,
+    "konu": "diger",
+    "devret": true,
+    "cevap_taslagi": "Talebinizi aldık. Doğrulanmış bilgi paylaşılması için mesajınızı temsilcimize yönlendiriyoruz.",
+    "not": "Genel/belirsiz talep; kargo firması veya marka politikası hakkında varsayım yapılmadı."
+  },
+  {
+    "id": 13,
+    "konu": "urun-sorusu",
+    "devret": true,
+    "cevap_taslagi": "Ürün hakkındaki sorunuzu aldık. Doğrulanmış ürün bilgisi için talebinizi temsilcimize yönlendiriyoruz.",
+    "not": "Ürün arama bonusu uygulanmadı; içerik, stok veya kullanım uygunluğu hakkında bilgi üretilmedi."
+  },
+  {
+    "id": 14,
+    "konu": "fiyat",
+    "devret": true,
+    "cevap_taslagi": "Güncel fiyat veya indirim bilgisini doğrulamak için talebinizi temsilcimize yönlendiriyoruz.",
+    "not": "Doğrulanmış fiyat/indirim kaynağı yok; fiyat ya da indirim kodu uydurulmadı."
+  },
+  {
+    "id": 15,
+    "konu": "diger",
+    "devret": true,
+    "cevap_taslagi": "Talebinizi aldık. Doğrulanmış bilgi paylaşılması için mesajınızı temsilcimize yönlendiriyoruz.",
+    "not": "Genel/belirsiz talep; kargo firması veya marka politikası hakkında varsayım yapılmadı."
+  }
+]
