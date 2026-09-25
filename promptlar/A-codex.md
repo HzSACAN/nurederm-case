@@ -90,3 +90,5 @@ Testlerde yalnızca verilen mesajlara dayanma; farklı ID ve ifadelerle birkaç 
 - README'ye kurulum/çalıştırma/test komutları, sınıflandırma kararları, güvenlik kontrolü ve mevcut sınırlamaları ekle.
 - Bölüm B'yi henüz tamamlanmadı olarak belirt. Bu prompt kapsamında workflow yazma.
 - Sonuçta değişen dosyaları, çalıştırılan komutları, gerçek test sonuçlarını, canlı çalışma durumunu ve varsa açık sorunları kısa raporla.
+
+şuanki değişiklikleri  "[https://github.com/HzSACAN/nurederm-case.git](https://github.com/HzSACAN/nurederm-case.git)" reposuna main branchine pushla

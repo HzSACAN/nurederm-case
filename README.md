@@ -3,7 +3,9 @@
 Başlangıç: **25 Eylül 2026 10.00 Europe/Istanbul**. Genel son teslim: **13.00**.
 Bölüm A'nın zorunlu uygulaması, testleri ve gerçek API çıktıları hazır.
 **Bölüm B henüz tamamlanmadı.** Bu aşamada n8n workflow'u hazırlanmadı.
-GitHub'a yükleme ve e-posta gönderme yapılmadı; bu aşamanın kapsamı dışındadır.
+İlk Bölüm A tesliminde GitHub'a yükleme ve e-posta gönderimi yapılmadı.
+Sonraki kullanıcı talebiyle GitHub hedefi `https://github.com/HzSACAN/nurederm-case.git`, dalı `main` olarak belirlendi.
+E-posta gönderimi hâlâ kapsam dışındadır.
 
 Asıl gereksinim kaynağı [case-brief.md](case-brief.md), özgün girdi [mesajlar.json](mesajlar.json).
 İki dosya değiştirilmedi; başlangıç/son SHA-256 değerleri çalışma günlüğünde.
