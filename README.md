@@ -9,8 +9,9 @@ Başlangıç: **25 Eylül 2026 10.00 Europe/Istanbul**. Genel son teslim: **13.0
 
 Önceki A ve B commit'leri [GitHub main dalına](https://github.com/HzSACAN/nurederm-case/tree/main) gönderildi (`ea38f13` dahil).
 **Bu teslim düzenlemesi henüz gönderilmedi.** Son push ve teslim e-postası sonraki aşamalardır.
-Ürün arama bonusu uygulanmadı. Gerçek n8n importu/çalıştırması ve ekran görüntüsü bonusu henüz yapılmadı;
-birim testler ve kaynak incelemesi bunların yerine geçmez. Proje için nihai tamamlanma saati henüz kaydedilmedi.
+Ürün arama bonusu uygulanmadı. **Yerel n8n 2.40.7 kuruldu ve workflow gerçek CLI ile pasif olarak import edildi.**
+Gerçek workflow çalıştırması ve sonuç ekran görüntüsü henüz yapılmadı; hesap/credential kurulumu bekliyor.
+[Yerel adres, başlatma/durdurma ve sıradaki adımlar](B-n8n/YEREL-N8N.md). Proje için nihai tamamlanma saati henüz kaydedilmedi.
 
 ## Hızlı kurulum ve doğrulama
 
@@ -49,7 +50,9 @@ kullanır; Windows'a özel shell komutu içermez. Başka makinede standart npm k
 Docker Desktop 4.72.0 / engine 29.4.2 çalışıyor. Kontrol edilen PATH/global/standart yerel konumlarda n8n,
 Docker'da n8n container/imajı bulunmadı. 5678 portunda dinleyici görünmedi; bağlantı denemeleri zaman aşımına uğradı.
 Sonraki adım ayrı bir n8n Docker örneği kurup workflow'u gerçek credential'larla çalıştırmak ve ekran görüntüsü almak.
-Bu ortam kontrolü kurulumları/container'ları değiştirmedi; gerçek n8n bonusu henüz uygulanmadı.
+Bu tarihli ortam kontrolü kurulumları/container'ları değiştirmedi. **Sonraki kurulum aşamasında** ayrı
+`nurederm-case-n8n` container'ı oluşturuldu; localhost:5678 HTTP 200, n8n 2.40.7 ve gerçek pasif import doğrulandı.
+30 düğüm/14 Code ve bağlantılar import sonrası korundu. Hesap kurulum ekranı kullanıcıyı bekliyor; execution henüz yapılmadı.
 
 Asıl gereksinim kaynağı [case-brief.md](case-brief.md), özgün girdi [mesajlar.json](mesajlar.json).
 İki dosya değiştirilmedi; başlangıç/son SHA-256 değerleri çalışma günlüğünde.
@@ -243,8 +246,9 @@ yeni/değişen/değişmeyen fiyatlar, önceki başarılı run seçimi, yarım ka
 Düğüm şemaları ve yürütme davranışı resmi **n8n@1.112.6** kaynaklarıyla kontrol edildi
 (`0c00d3b18c17ce36c62b54fecfa79215f649ebf8`). Gerçek ilk sayfanın indirilmiş HTML'inde 11.30.37'de
 6 kart doğru çıkarıldı ve son sayfa bağlantısı 20 olarak keşfedildi; bu değerler akışta sabitlenmedi.
-**JSON parse ve testler, gerçek n8n import/runtime doğrulaması değildir.** Bütün site üzerinde canlı tarama,
-Sheets yazımı veya Telegram gönderimi yapılmadı. Bunlar gerçek kullanım öncesi kalan doğrulamalardır.
+**JSON parse ve testler tek başına n8n import/runtime doğrulaması değildir.** Sonraki kurulum aşamasında
+n8n 2.40.7 üzerinde gerçek CLI import/export kontrolü yapıldı; ayrıntılar [yerel kurulum kaydında](B-n8n/YEREL-N8N.md).
+Bütün site üzerinde canlı workflow taraması, Sheets yazımı veya Telegram gönderimi henüz yapılmadı.
 
 İlk çalışmada bütün ürünler yeni kabul edilir. Snapshot → bildirim → tamamlanma kaydı sırası kullanılır;
 yarım yazımlar sonraki çalışmada referans olmaz. Bildirim başarılı olup tamamlanma kaydı başarısızsa tekrar bildirim olabilir.

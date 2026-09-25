@@ -1,6 +1,6 @@
 # Bölüm B — Günlük laptop fiyat takibi
 
-Teslim: [workflow.json](workflow.json). Google Sheets üzerinde tarihli snapshot, Telegram üzerinde yeni ürün/fiyat değişikliği bildirimi tasarımıdır. Akış **pasiftir (`active: false`)**. JSON ve çevrimdışı davranış kontrolleri yapıldı; **gerçek n8n importu, runtime çalıştırması, Sheets yazımı veya Telegram gönderimi yapılmadı**. Case bu canlı işlemleri zorunlu tutmuyor.
+Teslim: [workflow.json](workflow.json). Google Sheets üzerinde tarihli snapshot, Telegram üzerinde yeni ürün/fiyat değişikliği bildirimi tasarımıdır. Akış **pasiftir (`active: false`)**. İlk teslimde JSON ve çevrimdışı davranış kontrolleri yapıldı. Sonraki bonus kurulumunda **n8n 2.40.7 üzerinde gerçek CLI importu doğrulandı**; [yerel kurulum kaydı](YEREL-N8N.md). Workflow runtime çalıştırması, Sheets yazımı ve Telegram gönderimi henüz yapılmadı. Aşağıdaki 1.112.6 referansları önceki kaynak incelemesine aittir.
 
 ## Başlangıç şablonu ve uyarlama
 
@@ -98,7 +98,7 @@ Okumalar küçük case için iki sekmenin tamamını alır; en son tamamlanan ru
 
 ## n8n'e kurulum
 
-Bu adımlar kullanıcı tarafından gerçek çalıştırma istendiğinde yapılır; teslim sırasında uygulanmadı.
+İlk tasarım tesliminde bu adımlar uygulanmamıştı. Sonraki bonus kurulumunda Docker kurulumu ve CLI importu tamamlandı; owner hesabı ve credential adımları kullanıcıyı bekliyor. Güncel adres ve durum [YEREL-N8N.md](YEREL-N8N.md) içindedir.
 
 1. `workflow.json` dosyasını n8n arayüzündeki dosyadan import seçeneğiyle yükleyin. JSON dışındaki yerel script'lere ihtiyaç yoktur.
 2. Yukarıdaki iki Sheets sekmesini ve başlıkları oluşturun.
@@ -152,7 +152,7 @@ Yeni teslim düzenlemesi doğrulaması: **25.09.2026 11.59.00 — B kendi packag
 - Bağlı grafikte HTTP/Sheets/Telegram açıkça mock edilir: bütün sayfalar doğrulanmadan yazım olmaması, değişikliksiz yeni snapshot kaydı, connector cevabının bağlamı değiştirmesi, eksik sayfa/Sheets/bildirim hatalarının marker'a ulaşamaması ve hata bildirimi de başarısızken Stop And Error yolu sınanır.
 - **11.30.37** tarihinde indirilen gerçek ilk HTML sayfası, aynı selector ve Code kodlarıyla yerelde kontrol edildi: 6 ürün kartı, bağlantılardan keşfedilen son sayfa 20; ilk ürün `Packard 255 G2`, `416.99`, `2` yorum. Bu sayılar workflow'a yazılmadı. Bütün site üzerinde canlı tarama yapılmadı.
 
-JSON parse, kaynak incelemesi, birim test ve mock grafik kontrolü **n8n import/runtime doğrulaması değildir**. Harness n8n'in tam yürütücüsünü/item-link çözümleyicisini çalıştırmaz. Gerçek HTTP retry/bekleme zamanlaması, OAuth yetkileri, Sheets fiziksel yazımı ve Telegram teslimi sınanmadı. Kullandığınız n8n sürümünde import ve credential'larla uçtan uca kontrol gerçek kullanım öncesi kalan adımdır.
+JSON parse, kaynak incelemesi, birim test ve mock grafik kontrolü tek başına **n8n import/runtime doğrulaması değildir**. Harness n8n'in tam yürütücüsünü/item-link çözümleyicisini çalıştırmaz. Sonraki aşamada 2.40.7 üzerinde CLI importu ve import/export yapısal kontrolü ayrıca geçti; [gerçek sonuçlar](YEREL-N8N.md). Gerçek HTTP retry/bekleme zamanlaması, OAuth yetkileri, Sheets fiziksel yazımı ve Telegram teslimi henüz sınanmadı; credential'larla uçtan uca kontrol kalan adımdır.
 
 ## Sınırlamalar ve kayıtlar
 

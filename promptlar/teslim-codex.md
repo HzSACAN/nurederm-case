@@ -79,3 +79,55 @@ Son raporda şunları belirt:
 - Gerçek n8n çalıştırmasına geçmek için gereken sonraki somut adım.
 
 Bu promptun kapsamı teslim düzenlemesi ve ortam tespitidir. Gerçek n8n çalıştırması, ekran görüntüleri, son push ve teslim e-postası sonraki adımlardır.
+
+Şimdi n8n canlı çalıştırma bonusunun kurulum ve import aşamasını yapıyoruz. Docker Desktop ve Linux engine çalışıyor; n8n container/imajı henüz yok. Son teslim 25 Eylül 2026 13.00 Europe/Istanbul. Kurulum ve importu yaklaşık 10 dakika içinde hazırlamayı hedefle.
+
+Önce bu promptu promptlar/teslim-codex.md dosyasına aynen ekle. Ek onay beklemeden yetkilendirilmiş yerel kurulumu gerçekleştir.
+
+1. ÖN KONTROL
+
+- Git durumunu kontrol et; mevcut yerel commit’leri koru.
+- B-n8n/package-lock.json dosyasının mevcut olduğunu ve Git tarafından takip edildiğini doğrula.
+- A dosyaları, özgün girdiler ve mevcut başarılı çıktıları koru.
+
+2. AYRI N8N ÖRNEĞİNİ BAŞLAT
+
+- Mevcut Docker container’larına ve volume’larına dokunmadan bu case için ayrı bir n8n örneği oluştur.
+- Resmî n8n imajını kullan. Erişilebilir kararlı sürümün sayısal etiketini doğrula ve sabitle; kullanılan sürümü kaydet.
+- Belgelerdeki 1.112.6’nın önceki kaynak incelemesi referansı olduğunu koru; kurduğun sürüm farklıysa ikisini açıkça ayır.
+- Tek n8n servisi, SQLite ve kalıcı named volume kullanan sade bir yerel kurulum yeterli. n8n Assistant, ek veritabanı veya arama servisleri kurma.
+- Container adı nurederm-case-n8n, volume adı nurederm\_case\_n8n\_data olabilir. İsimler kullanımdaysa mevcut kaynakları silmeden farklı isim seç.
+- Portu yalnızca yerel makineye bağla: 127.0.0.1:5678:5678. Çakışma varsa boş yerel port seçip bildir.
+- TZ ve GENERIC\_TIMEZONE değerleri Europe/Istanbul olsun.
+- Gerekli ayarları seçilen n8n sürümünün resmî belgelerine göre yap.
+- Tekrar kullanılabilir kurulum dosyasını B-n8n/compose.yaml altında tut. Credential veya şifre ekleme.
+- n8n veritabanı, kullanıcı bilgileri ve encryption key kalıcı Docker volume’unda kalsın; depoya kopyalanmasın.
+
+Container’ı başlat. Sürümünü, çalışma durumunu ve yerel HTTP erişimini gerçekten kontrol et. Başlatma hatası çıkarsa nedenini inceleyip kapsam içinde düzelt.
+
+3. WORKFLOW IMPORTU
+
+- Arayüz erişimi hazır olduğunda B-n8n/workflow\.json dosyasını gerçek n8n’e import et.
+- Kullanılabilir tarayıcı araçları veya seçilen sürümün desteklenen import yöntemiyle ilerle.
+- Kullanıcı hesabı oluşturma/giriş adımı benim tarafımdan yapılmalıysa sunucuyu hazır bırak; açacağım adresi ve tamamlamam gereken ekranı açıkça bildir. Parolamı sohbette isteme.
+- Import gerçekleşirse düğümlerin tanındığını, bağlantıların korunduğunu ve Code düğümlerinin bulunduğunu kontrol et.
+- Workflow pasif kalsın; zamanlanmış çalışmayı etkinleştirme.
+- Google Sheets ve Telegram credential’ları henüz yapılandırılmadıysa bunu beklenen kurulum ihtiyacı olarak raporla. Bu durumu başarılı uçtan uca çalışma diye gösterme.
+- Import sırasında gerçek bir uyumluluk hatası bulunursa yalnızca gerekli düzeltmeyi yap, gerekçesini kaydet ve etkilenen testleri çalıştır.
+
+4. KAYIT VE SONUÇ
+
+- Gerçek komutları, sürümü ve sonucu TESLIM-CALISMA-GUNLUGU.md dosyasına ekle.
+- Başlatma/durdurma komutlarını kısa şekilde belgele; durdurma komutu kalıcı volume’u silmesin.
+- Arayüz görüntüsü alınabiliyorsa yalnızca gerçek ekranı kaydet. Henüz çalıştırılmamış workflow görüntüsünü “import görünümü” olarak etiketle.
+- README’de yalnızca gerçekten doğrulanan durumu güncelle.
+- Yerel commit oluştur; henüz push yapma.
+
+Son raporda şunları ver:
+
+- Açacağım yerel n8n adresi.
+- Container ve n8n sürümü.
+- Import yapıldı mı, yoksa hangi kullanıcı adımı bekleniyor?
+- Google Sheets ve Telegram bağlantılarını hazırlamak için arayüzde sıradaki somut adım.
+
+Bu aşamanın ardından credential’ları bağlayıp gerçek çalıştırmayı yapacak, sonuç ekran görüntülerini ekleyecek ve son push’u gerçekleştireceğiz.

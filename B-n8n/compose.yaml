@@ -1,0 +1,26 @@
+name: nurederm-case
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.40.7
+    container_name: nurederm-case-n8n
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      TZ: Europe/Istanbul
+      GENERIC_TIMEZONE: Europe/Istanbul
+      DB_TYPE: sqlite
+      N8N_HOST: localhost
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: http
+      N8N_EDITOR_BASE_URL: http://localhost:5678/
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_RUNNERS_MODE: internal
+      N8N_DIAGNOSTICS_ENABLED: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:
+    name: nurederm_case_n8n_data
