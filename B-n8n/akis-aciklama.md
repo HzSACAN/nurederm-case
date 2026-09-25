@@ -1,6 +1,12 @@
 # Bölüm B — Günlük laptop fiyat takibi
 
-Teslim: [workflow.json](workflow.json). Google Sheets üzerinde tarihli snapshot, Telegram üzerinde yeni ürün/fiyat değişikliği bildirimi tasarımıdır. Akış **pasiftir (`active: false`)**. İlk teslimde JSON ve çevrimdışı davranış kontrolleri yapıldı. Sonraki bonus kurulumunda **n8n 2.40.7 üzerinde gerçek CLI importu doğrulandı**; [yerel kurulum kaydı](YEREL-N8N.md). Workflow runtime çalıştırması, Sheets yazımı ve Telegram gönderimi henüz yapılmadı. Aşağıdaki 1.112.6 referansları önceki kaynak incelemesine aittir.
+Teslim: [workflow.json](workflow.json). Google Sheets üzerinde tarihli snapshot, Telegram üzerinde yeni ürün/fiyat değişikliği bildirimi tasarımıdır. Akış **pasiftir (`active: false`)**. İlk teslimde JSON ve çevrimdışı davranış kontrolleri yapıldı. Sonraki bonus kurulumunda **n8n 2.40.7 üzerinde gerçek CLI importu doğrulandı**; [yerel kurulum kaydı](YEREL-N8N.md). **25.09.2026’da n8n 2.40.7 üzerinde 20 sayfa tarandı; 117 ürün `Finalize Scan` başarı çıkışında doğrulandı.** Google Sheets ve Telegram bağlanmadı; **uçtan uca çalıştırma yapılmadı**. Aşağıdaki 1.112.6 referansları önceki kaynak incelemesine aittir.
+
+## Gerçek tarama kanıtı
+
+Kullanıcının sağladığı ekran görüntüsü tarama/doğrulama aşamasının sonucudur: `last_page: 20`, `more_pages: false`, `product_count: 117` ve `Finalize Scan` **Success Branch** görünür. Bu belge güncellemesinde tarama yeniden çalıştırılmadı. Görüntü Sheets snapshot yazımı, tamamlanma kaydı veya Telegram gönderimi kanıtı değildir; bu servisler bağlanmadı.
+
+![25.09.2026 — n8n 2.40.7, Finalize Scan başarı çıkışı: 20 sayfa, 117 ürün](tarama-sonucu.png)
 
 ## Başlangıç şablonu ve uyarlama
 
@@ -98,7 +104,7 @@ Okumalar küçük case için iki sekmenin tamamını alır; en son tamamlanan ru
 
 ## n8n'e kurulum
 
-İlk tasarım tesliminde bu adımlar uygulanmamıştı. Sonraki bonus kurulumunda Docker kurulumu ve CLI importu tamamlandı; owner hesabı ve credential adımları kullanıcıyı bekliyor. Güncel adres ve durum [YEREL-N8N.md](YEREL-N8N.md) içindedir.
+İlk tasarım tesliminde bu adımlar uygulanmamıştı. Sonraki bonus kurulumunda Docker/CLI importu, ardından kullanıcı tarafından tarama aşaması tamamlandı. Google Sheets ve Telegram credential adımları bekliyor. Kurulum adımları [YEREL-N8N.md](YEREL-N8N.md) içindedir.
 
 1. `workflow.json` dosyasını n8n arayüzündeki dosyadan import seçeneğiyle yükleyin. JSON dışındaki yerel script'lere ihtiyaç yoktur.
 2. Yukarıdaki iki Sheets sekmesini ve başlıkları oluşturun.
@@ -158,4 +164,4 @@ JSON parse, kaynak incelemesi, birim test ve mock grafik kontrolü tek başına 
 
 Kaynak site [statik laptop kategorisidir](https://webscraper.io/test-sites/e-commerce/static/computers/laptops). HTML veya URL düzeni değişirse akış ihtiyatlı şekilde hata verir; başka sitelere genel scraper değildir. Tarama sırasında kaynak listenin değişmesi transaction ile önlenemez. Sonraki sayfalara işaret eden bağlantıların tümü siteden kaldırılırsa görünmeyen sayfaların varlığı çıkarılamaz. Bütün ürünler ve geçmiş satırlar bellekte işlendiğinden büyük ölçek için uygun değildir; bu case için yeterli basitlik seçildi.
 
-Tek execution kuralı ve olası tekrar bildirim davranışı yukarıda açıklandı. Canlı n8n sonucu/ekran görüntüsü yoktur. Başarısız denemeler ve yerel commit kayıtları [CALISMA-GUNLUGU.md](CALISMA-GUNLUGU.md), kullanıcı talebi aynen [promptlar/B-n8n.md](../promptlar/B-n8n.md) içindedir. Önceki A/B commit'leri sonraki kullanıcı onayıyla GitHub'a gönderildi (`ea38f13` dahil). Yeni teslim düzenlemesi henüz gönderilmedi; son push, gerçek n8n bonusu ve e-posta sonraki adımlardır. Bölüm A kodu ve başarılı canlı çıktıları korunuyor.
+Tek execution kuralı ve olası tekrar bildirim davranışı yukarıda açıklandı. Gerçek tarama ekranı eklendi; Google Sheets/Telegram bağlanmadı ve uçtan uca çalıştırma yapılmadı. Başarısız denemeler ve yerel commit kayıtları [CALISMA-GUNLUGU.md](CALISMA-GUNLUGU.md), ilk kullanıcı talebi aynen [promptlar/B-n8n.md](../promptlar/B-n8n.md), sonraki teslim kayıtları [teslim günlüğü](../TESLIM-CALISMA-GUNLUGU.md) ve [teslim promptları](../promptlar/teslim-codex.md) içindedir. Teslim düzenlemesi ve tarama kanıtı son GitHub güncellemesine dahildir; e-posta bu işlem kapsamında gönderilmez. Bölüm A kodu ve başarılı canlı çıktıları korunuyor.

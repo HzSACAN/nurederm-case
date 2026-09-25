@@ -131,3 +131,7 @@ Son raporda şunları ver:
 - Google Sheets ve Telegram bağlantılarını hazırlamak için arayüzde sıradaki somut adım.
 
 Bu aşamanın ardından credential’ları bağlayıp gerçek çalıştırmayı yapacak, sonuç ekran görüntülerini ekleyecek ve son push’u gerçekleştireceğiz.
+
+`B-n8n/tarama-sonucu.png` görüntüsünü teslim dosyalarına ekle. README ve B açıklamasına 25.09.2026’da n8n 2.40.7 üzerinde 20 sayfanın tarandığını, 117 ürünün `Finalize Scan` başarı çıkışında doğrulandığını yaz. Google Sheets/Telegram bağlanmadığını ve uçtan uca çalıştırma yapılmadığını açıkça belirt. Geçici ID’leri ve sırları depoya alma. Promptu teslim prompt kaydına aynen ekle. `npm run check` çalıştır, değişiklikleri commit et, `git push origin main` yap ve uzak `main` commit’ini doğrula. Sonuçları kısa bildir.  
+
+görüntüyü elleme yüklediğim gibi kalsın

@@ -5,12 +5,14 @@ Başlangıç: **25 Eylül 2026 10.00 Europe/Istanbul**. Genel son teslim: **13.0
 | Bölüm | Mevcut durum ve inceleme bağlantıları |
 | --- | --- |
 | A — Mesaj otomasyonu | Zorunlu uygulama ve gerçek API çıktıları hazır: [talepler.json](A-mesaj-otomasyonu/talepler.json), [ozet.html](A-mesaj-otomasyonu/ozet.html). Son canlı sonuç: 15 mesaj, 12 devir. |
-| B — Fiyat takibi | Pasif [workflow.json](B-n8n/workflow.json), [akış/kurulum açıklaması](B-n8n/akis-aciklama.md) ve çevrimdışı testler hazır. |
+| B — Fiyat takibi | Pasif [workflow.json](B-n8n/workflow.json), [akış açıklaması](B-n8n/akis-aciklama.md), çevrimdışı testler ve [gerçek tarama ekranı](B-n8n/tarama-sonucu.png) hazır: 20 sayfa, 117 ürün. |
 
 Önceki A ve B commit'leri [GitHub main dalına](https://github.com/HzSACAN/nurederm-case/tree/main) gönderildi (`ea38f13` dahil).
-**Bu teslim düzenlemesi henüz gönderilmedi.** Son push ve teslim e-postası sonraki aşamalardır.
+Teslim düzenlemesi ve tarama kanıtı bu son GitHub güncellemesine dahildir. Teslim e-postası bu işlem kapsamında gönderilmez.
 Ürün arama bonusu uygulanmadı. **Yerel n8n 2.40.7 kuruldu ve workflow gerçek CLI ile pasif olarak import edildi.**
-Gerçek workflow çalıştırması ve sonuç ekran görüntüsü henüz yapılmadı; hesap/credential kurulumu bekliyor.
+**25.09.2026’da n8n 2.40.7 üzerinde 20 sayfa tarandı; 117 ürün `Finalize Scan` başarı çıkışında doğrulandı.**
+Kullanıcının sağladığı [ekran görüntüsü](B-n8n/tarama-sonucu.png) tarama aşamasını belgeliyor.
+**Google Sheets ve Telegram bağlanmadı; uçtan uca çalıştırma yapılmadı.** Kalıcı kayıt/bildirim başarısı iddia edilmiyor.
 [Yerel adres, başlatma/durdurma ve sıradaki adımlar](B-n8n/YEREL-N8N.md). Proje için nihai tamamlanma saati henüz kaydedilmedi.
 
 ## Hızlı kurulum ve doğrulama
@@ -39,6 +41,8 @@ npm --prefix A-mesaj-otomasyonu run start
 B'yi bağımsız doğrulamak için `cd B-n8n`, `npm ci`, `npm test` yeterlidir.
 **Yeni yerel doğrulama — 25.09.2026 11.59 Europe/Istanbul:** B kendi kilidinden `npm ci` ile kuruldu;
 bağımsız 17 testi geçti. Kök `npm run check`: **A 100/100, B 17/17 ve A typecheck başarılı, exit 0**.
+Son teslim güncellemesinde **25.09.2026 12.51 Europe/Istanbul** aynı kök komut yeniden çalıştırıldı:
+**A 100/100, B 17/17, typecheck başarılı; exit 0**. A'nın canlı çıktıları yeniden üretilmedi.
 Teslim düzenlemesinin güncel komut sonuçları ve ortam tespiti [teslim çalışma kaydında](TESLIM-CALISMA-GUNLUGU.md);
 önceki A/B doğrulamalarının tarihli kayıtları aşağıda korunur.
 
@@ -52,7 +56,8 @@ Docker'da n8n container/imajı bulunmadı. 5678 portunda dinleyici görünmedi; 
 Sonraki adım ayrı bir n8n Docker örneği kurup workflow'u gerçek credential'larla çalıştırmak ve ekran görüntüsü almak.
 Bu tarihli ortam kontrolü kurulumları/container'ları değiştirmedi. **Sonraki kurulum aşamasında** ayrı
 `nurederm-case-n8n` container'ı oluşturuldu; localhost:5678 HTTP 200, n8n 2.40.7 ve gerçek pasif import doğrulandı.
-30 düğüm/14 Code ve bağlantılar import sonrası korundu. Hesap kurulum ekranı kullanıcıyı bekliyor; execution henüz yapılmadı.
+30 düğüm/14 Code ve bağlantılar import sonrası korundu. Kurulum kontrolü sırasında hesap ekranı kullanıcıyı bekliyordu.
+Sonraki kullanıcı koşumunda tarama `Finalize Scan` başarı çıkışına ulaştı; 20 sayfa ve 117 ürünün ekran kanıtı teslim dosyalarına eklendi.
 
 Asıl gereksinim kaynağı [case-brief.md](case-brief.md), özgün girdi [mesajlar.json](mesajlar.json).
 İki dosya değiştirilmedi; başlangıç/son SHA-256 değerleri çalışma günlüğünde.
@@ -248,7 +253,11 @@ Düğüm şemaları ve yürütme davranışı resmi **n8n@1.112.6** kaynaklarıy
 6 kart doğru çıkarıldı ve son sayfa bağlantısı 20 olarak keşfedildi; bu değerler akışta sabitlenmedi.
 **JSON parse ve testler tek başına n8n import/runtime doğrulaması değildir.** Sonraki kurulum aşamasında
 n8n 2.40.7 üzerinde gerçek CLI import/export kontrolü yapıldı; ayrıntılar [yerel kurulum kaydında](B-n8n/YEREL-N8N.md).
-Bütün site üzerinde canlı workflow taraması, Sheets yazımı veya Telegram gönderimi henüz yapılmadı.
+25.09.2026’da kullanıcı tarafından sağlanan n8n 2.40.7 ekran kanıtında 20 sayfalık tarama ve `Finalize Scan`
+başarı çıkışında 117 ürün doğrulandı. Bu koşum bu son belge güncellemesinde yeniden çalıştırılmadı.
+Google Sheets/Telegram bağlantıları kurulmadı; Sheets yazımı, Telegram gönderimi ve uçtan uca çalışma doğrulanmadı.
+
+![n8n 2.40.7 — Finalize Scan başarı çıkışında 20 sayfa ve 117 ürün; yalnızca tarama aşaması](B-n8n/tarama-sonucu.png)
 
 İlk çalışmada bütün ürünler yeni kabul edilir. Snapshot → bildirim → tamamlanma kaydı sırası kullanılır;
 yarım yazımlar sonraki çalışmada referans olmaz. Bildirim başarılı olup tamamlanma kaydı başarısızsa tekrar bildirim olabilir.

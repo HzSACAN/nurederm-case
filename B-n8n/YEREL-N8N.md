@@ -37,7 +37,7 @@ docker exec -u node nurederm-case-n8n n8n import:workflow --input=/tmp/nurederm-
 
 Import sonrası yalnızca workflow CLI ile dışa aktarılarak karşılaştırıldı: **30 düğüm, 14 Code düğümü, nodes ve connections birebir aynı; active false, activeVersionId null**. Kullanılan 11 farklı node tipi kurulu resmî `n8n-nodes-base` node kayıtlarında mevcut. Kimlik/credential/veritabanı export edilmedi. `/types/nodes.json` HTTP isteği hesap kurulmadan 401 döndüğü için UI üzerinden node kataloğu doğrulaması yapılmış sayılmıyor.
 
-ID düzeltmesinden sonra B `npm test`: **12.18.21 Europe/Istanbul, 17/17 geçti, 1.75 saniye, exit 0**. Gerçek workflow execution, Sheets yazımı ve Telegram gönderimi **henüz yok**. Canvas/import ekran görüntüsü de hesap kurulumu beklediği için henüz alınmadı. Import ve kurulu node kaydı kontrolü başarılı uçtan uca çalışma anlamına gelmez.
+ID düzeltmesinden sonra B `npm test`: **12.18.21 Europe/Istanbul, 17/17 geçti, 1.75 saniye, exit 0**. O kurulum aşamasında execution ve ekran görüntüsü henüz yoktu. **Sonraki kullanıcı koşumu (25.09.2026, n8n 2.40.7): 20 sayfa tarandı, 117 ürün `Finalize Scan` başarı çıkışında doğrulandı; [tarama ekranı](tarama-sonucu.png).** Google Sheets ve Telegram bağlanmadı; uçtan uca çalıştırma yapılmadı. Son belge güncellemesinde tarama tekrar çalıştırılmadı.
 
 ## Kullanıcının sıradaki adımı
 
@@ -45,6 +45,6 @@ ID düzeltmesinden sonra B `npm test`: **12.18.21 Europe/Istanbul, 17/17 geçti,
 2. `Configuration` düğümünde spreadsheet ID ve Telegram chat ID placeholder'larını doldurun. Sheets'te `snapshots` ve `runs` sekmelerini [belgedeki sütunlarla](akis-aciklama.md#google-sheets-yapısı-ve-ilk-çalışma) hazırlayın.
 3. Dört Google Sheets düğümünde Google Sheets OAuth2 credential oluşturup/seçip hesabı bağlayın; aynı credential'ı dört düğüme atayın. OAuth istemcisi gerekiyorsa credential ekranındaki callback URL'yi kullanın.
 4. `Send Changes` ve `Send Error` düğümlerinde Telegram credential oluşturup bot token'ını **yalnızca n8n credential ekranına** girin; iki düğümde aynı bağlantıyı seçin.
-5. Workflow'u **Publish etmeyin**; zamanlanmış çalışma pasif kalsın. Gerçek manuel çalıştırma ve sonuç ekran görüntüsü bir sonraki aşamadır.
+5. Workflow'u **Publish etmeyin**; zamanlanmış çalışma pasif kalsın. Tarama aşamasının ekranı teslimde mevcut; credential bağlantıları ve gerçek uçtan uca çalıştırma kalan adımdır.
 
 Resmî kaynaklar: [Docker kurulumu](https://docs.n8n.io/deploy/host-n8n/install-options/install-with-docker), [Compose rehberi](https://docs.n8n.io/deploy/host-n8n/install-options/install-using-docker-compose), [Server CLI import](https://docs.n8n.io/deploy/host-n8n/configure-n8n/use-the-command-line), [stable sürüm kaynağı](https://github.com/n8n-io/n8n/blob/stable/packages/cli/package.json). Compose rehberindeki Assistant ek servisleri kullanıcının istediği sade kapsam nedeniyle eklenmedi.
